@@ -33,6 +33,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -51,6 +52,7 @@
     <Compile Include="Main.Designer.cs">
       <DependentUpon>Main.cs</DependentUpon>
     </Compile>
+    <Compile Include="Metadata.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Main.resx">
@@ -83,6 +85,10 @@
     <ProjectReference Include="..\..\Framework\CommunicationManager\CommunicationManager\CommunicationManager.csproj">
       <Project>{52d30c45-33c7-40f6-bdac-4a0f27fcbde2}</Project>
       <Name>CommunicationManager</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Framework\DataStructures\DataStructures\DataStructures.csproj">
+      <Project>{d32ba6c1-a167-4e95-adf6-7c631981f167}</Project>
+      <Name>DataStructures</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
