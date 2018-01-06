@@ -1,0 +1,33 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectionBridgeClient", "ConnectionBridgeClient\ConnectionBridgeClient\ConnectionBridgeClient.csproj", "{EE8D82CF-16DA-4D0D-B619-2D13AF2D0188}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Framework", "Framework", "{3B22AA72-704A-4888-BA4C-A144FB3A9E1B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunicationManager", "Framework\CommunicationManager\CommunicationManager\CommunicationManager.csproj", "{52D30C45-33C7-40F6-BDAC-4A0F27FCBDE2}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EE8D82CF-16DA-4D0D-B619-2D13AF2D0188}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EE8D82CF-16DA-4D0D-B619-2D13AF2D0188}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EE8D82CF-16DA-4D0D-B619-2D13AF2D0188}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EE8D82CF-16DA-4D0D-B619-2D13AF2D0188}.Release|Any CPU.Build.0 = Release|Any CPU
+		{52D30C45-33C7-40F6-BDAC-4A0F27FCBDE2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{52D30C45-33C7-40F6-BDAC-4A0F27FCBDE2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{52D30C45-33C7-40F6-BDAC-4A0F27FCBDE2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{52D30C45-33C7-40F6-BDAC-4A0F27FCBDE2}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{52D30C45-33C7-40F6-BDAC-4A0F27FCBDE2} = {3B22AA72-704A-4888-BA4C-A144FB3A9E1B}
+	EndGlobalSection
+EndGlobal
