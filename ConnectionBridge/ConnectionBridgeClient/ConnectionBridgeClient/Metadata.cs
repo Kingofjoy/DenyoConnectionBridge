@@ -24,7 +24,7 @@ namespace Denyo.ConnectionBridge.Client
 
         public static string AuthToken{ get; set; }
 
-        public static string PreferredCOMPort { get; set; }
+        public static string PreferredCOMPort { get; set; } 
 
         public static string PreferredBaudRate { get; set; }
 
