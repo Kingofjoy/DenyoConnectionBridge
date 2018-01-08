@@ -1,4 +1,8 @@
-﻿namespace Denyo.ConnectionBridge.Client
+﻿using System;
+using System.IO.Ports;
+using System.Windows.Forms;
+
+namespace Denyo.ConnectionBridge.Client
 {
     partial class Main
     {
@@ -28,6 +32,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.label5 = new System.Windows.Forms.Label();
             this.cboData = new System.Windows.Forms.ComboBox();
             this.label4 = new System.Windows.Forms.Label();
@@ -48,23 +53,24 @@
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
-            this.label6 = new System.Windows.Forms.Label();
-            this.label7 = new System.Windows.Forms.Label();
-            this.label8 = new System.Windows.Forms.Label();
             this.label9 = new System.Windows.Forms.Label();
+            this.label8 = new System.Windows.Forms.Label();
+            this.label7 = new System.Windows.Forms.Label();
+            this.label6 = new System.Windows.Forms.Label();
             this.groupBox5 = new System.Windows.Forms.GroupBox();
+            this.lblHC = new System.Windows.Forms.Label();
+            this.lblTime = new System.Windows.Forms.Label();
+            this.lblTimer = new System.Windows.Forms.Label();
+            this.lblRemoteServer = new System.Windows.Forms.Label();
+            this.lblInternet = new System.Windows.Forms.Label();
+            this.lblDevice = new System.Windows.Forms.Label();
+            this.label14 = new System.Windows.Forms.Label();
+            this.label15 = new System.Windows.Forms.Label();
             this.label10 = new System.Windows.Forms.Label();
             this.label11 = new System.Windows.Forms.Label();
             this.label12 = new System.Windows.Forms.Label();
             this.label13 = new System.Windows.Forms.Label();
-            this.label15 = new System.Windows.Forms.Label();
-            this.lblInternet = new System.Windows.Forms.Label();
-            this.lblDevice = new System.Windows.Forms.Label();
-            this.lblTimer = new System.Windows.Forms.Label();
-            this.lblRemoteServer = new System.Windows.Forms.Label();
-            this.lblTime = new System.Windows.Forms.Label();
-            this.lblHC = new System.Windows.Forms.Label();
-            this.label14 = new System.Windows.Forms.Label();
+            this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.GroupBox1.SuspendLayout();
             this.groupBox3.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -192,6 +198,7 @@
             this.button1.TabIndex = 14;
             this.button1.Text = "Get MetaData";
             this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
             // cmdSend
             // 
@@ -202,6 +209,7 @@
             this.cmdSend.TabIndex = 5;
             this.cmdSend.Text = "Send";
             this.cmdSend.UseVisualStyleBackColor = true;
+            this.cmdSend.Click += new System.EventHandler(this.cmdSend_Click_1);
             // 
             // txtSend
             // 
@@ -216,6 +224,7 @@
             this.rtbDisplay.Location = new System.Drawing.Point(9, 23);
             this.rtbDisplay.Margin = new System.Windows.Forms.Padding(4);
             this.rtbDisplay.Name = "rtbDisplay";
+            this.rtbDisplay.ReadOnly = true;
             this.rtbDisplay.Size = new System.Drawing.Size(723, 287);
             this.rtbDisplay.TabIndex = 3;
             this.rtbDisplay.Text = "";
@@ -306,23 +315,14 @@
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Status";
             // 
-            // label6
+            // label9
             // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(20, 33);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(63, 17);
-            this.label6.TabIndex = 0;
-            this.label6.Text = "Device : ";
-            // 
-            // label7
-            // 
-            this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(15, 66);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(68, 17);
-            this.label7.TabIndex = 1;
-            this.label7.Text = "Internet : ";
+            this.label9.AutoSize = true;
+            this.label9.Location = new System.Drawing.Point(290, 66);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(56, 17);
+            this.label9.TabIndex = 3;
+            this.label9.Text = "Timer : ";
             // 
             // label8
             // 
@@ -333,14 +333,23 @@
             this.label8.TabIndex = 2;
             this.label8.Text = "Remote Server : ";
             // 
-            // label9
+            // label7
             // 
-            this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(290, 66);
-            this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(56, 17);
-            this.label9.TabIndex = 3;
-            this.label9.Text = "Timer : ";
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(15, 66);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(68, 17);
+            this.label7.TabIndex = 1;
+            this.label7.Text = "Internet : ";
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(20, 33);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(63, 17);
+            this.label6.TabIndex = 0;
+            this.label6.Text = "Device : ";
             // 
             // groupBox5
             // 
@@ -362,6 +371,78 @@
             this.groupBox5.TabIndex = 14;
             this.groupBox5.TabStop = false;
             this.groupBox5.Text = "Status";
+            // 
+            // lblHC
+            // 
+            this.lblHC.AutoSize = true;
+            this.lblHC.Location = new System.Drawing.Point(580, 66);
+            this.lblHC.Name = "lblHC";
+            this.lblHC.Size = new System.Drawing.Size(27, 17);
+            this.lblHC.TabIndex = 11;
+            this.lblHC.Text = "NA";
+            // 
+            // lblTime
+            // 
+            this.lblTime.AutoSize = true;
+            this.lblTime.Location = new System.Drawing.Point(580, 34);
+            this.lblTime.Name = "lblTime";
+            this.lblTime.Size = new System.Drawing.Size(27, 17);
+            this.lblTime.TabIndex = 10;
+            this.lblTime.Text = "NA";
+            // 
+            // lblTimer
+            // 
+            this.lblTimer.AutoSize = true;
+            this.lblTimer.Location = new System.Drawing.Point(352, 66);
+            this.lblTimer.Name = "lblTimer";
+            this.lblTimer.Size = new System.Drawing.Size(27, 17);
+            this.lblTimer.TabIndex = 9;
+            this.lblTimer.Text = "NA";
+            // 
+            // lblRemoteServer
+            // 
+            this.lblRemoteServer.AutoSize = true;
+            this.lblRemoteServer.Location = new System.Drawing.Point(352, 34);
+            this.lblRemoteServer.Name = "lblRemoteServer";
+            this.lblRemoteServer.Size = new System.Drawing.Size(27, 17);
+            this.lblRemoteServer.TabIndex = 8;
+            this.lblRemoteServer.Text = "NA";
+            // 
+            // lblInternet
+            // 
+            this.lblInternet.AutoSize = true;
+            this.lblInternet.Location = new System.Drawing.Point(89, 66);
+            this.lblInternet.Name = "lblInternet";
+            this.lblInternet.Size = new System.Drawing.Size(27, 17);
+            this.lblInternet.TabIndex = 7;
+            this.lblInternet.Text = "NA";
+            // 
+            // lblDevice
+            // 
+            this.lblDevice.AutoSize = true;
+            this.lblDevice.Location = new System.Drawing.Point(89, 34);
+            this.lblDevice.Name = "lblDevice";
+            this.lblDevice.Size = new System.Drawing.Size(27, 17);
+            this.lblDevice.TabIndex = 6;
+            this.lblDevice.Text = "NA";
+            // 
+            // label14
+            // 
+            this.label14.AutoSize = true;
+            this.label14.Location = new System.Drawing.Point(535, 66);
+            this.label14.Name = "label14";
+            this.label14.Size = new System.Drawing.Size(39, 17);
+            this.label14.TabIndex = 5;
+            this.label14.Text = "HC : ";
+            // 
+            // label15
+            // 
+            this.label15.AutoSize = true;
+            this.label15.Location = new System.Drawing.Point(523, 34);
+            this.label15.Name = "label15";
+            this.label15.Size = new System.Drawing.Size(51, 17);
+            this.label15.TabIndex = 4;
+            this.label15.Text = "Time : ";
             // 
             // label10
             // 
@@ -399,77 +480,10 @@
             this.label13.TabIndex = 0;
             this.label13.Text = "Device : ";
             // 
-            // label15
+            // timer1
             // 
-            this.label15.AutoSize = true;
-            this.label15.Location = new System.Drawing.Point(523, 34);
-            this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(51, 17);
-            this.label15.TabIndex = 4;
-            this.label15.Text = "Time : ";
-            // 
-            // lblInternet
-            // 
-            this.lblInternet.AutoSize = true;
-            this.lblInternet.Location = new System.Drawing.Point(89, 66);
-            this.lblInternet.Name = "lblInternet";
-            this.lblInternet.Size = new System.Drawing.Size(27, 17);
-            this.lblInternet.TabIndex = 7;
-            this.lblInternet.Text = "NA";
-            // 
-            // lblDevice
-            // 
-            this.lblDevice.AutoSize = true;
-            this.lblDevice.Location = new System.Drawing.Point(89, 34);
-            this.lblDevice.Name = "lblDevice";
-            this.lblDevice.Size = new System.Drawing.Size(27, 17);
-            this.lblDevice.TabIndex = 6;
-            this.lblDevice.Text = "NA";
-            // 
-            // lblTimer
-            // 
-            this.lblTimer.AutoSize = true;
-            this.lblTimer.Location = new System.Drawing.Point(352, 66);
-            this.lblTimer.Name = "lblTimer";
-            this.lblTimer.Size = new System.Drawing.Size(27, 17);
-            this.lblTimer.TabIndex = 9;
-            this.lblTimer.Text = "NA";
-            // 
-            // lblRemoteServer
-            // 
-            this.lblRemoteServer.AutoSize = true;
-            this.lblRemoteServer.Location = new System.Drawing.Point(352, 34);
-            this.lblRemoteServer.Name = "lblRemoteServer";
-            this.lblRemoteServer.Size = new System.Drawing.Size(27, 17);
-            this.lblRemoteServer.TabIndex = 8;
-            this.lblRemoteServer.Text = "NA";
-            // 
-            // lblTime
-            // 
-            this.lblTime.AutoSize = true;
-            this.lblTime.Location = new System.Drawing.Point(580, 34);
-            this.lblTime.Name = "lblTime";
-            this.lblTime.Size = new System.Drawing.Size(27, 17);
-            this.lblTime.TabIndex = 10;
-            this.lblTime.Text = "NA";
-            // 
-            // lblHC
-            // 
-            this.lblHC.AutoSize = true;
-            this.lblHC.Location = new System.Drawing.Point(580, 66);
-            this.lblHC.Name = "lblHC";
-            this.lblHC.Size = new System.Drawing.Size(27, 17);
-            this.lblHC.TabIndex = 11;
-            this.lblHC.Text = "NA";
-            // 
-            // label14
-            // 
-            this.label14.AutoSize = true;
-            this.label14.Location = new System.Drawing.Point(535, 66);
-            this.label14.Name = "label14";
-            this.label14.Size = new System.Drawing.Size(39, 17);
-            this.label14.TabIndex = 5;
-            this.label14.Text = "HC : ";
+            this.timer1.Interval = 200;
+            this.timer1.Tick += new System.EventHandler(this.timer1_Tick_1);
             // 
             // Main
             // 
@@ -499,6 +513,7 @@
         }
 
         #endregion
+
 
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.ComboBox cboData;
@@ -537,5 +552,6 @@
         private System.Windows.Forms.Label lblDevice;
         private System.Windows.Forms.Label lblHC;
         private System.Windows.Forms.Label label14;
+        private System.Windows.Forms.Timer timer1;
     }
 }

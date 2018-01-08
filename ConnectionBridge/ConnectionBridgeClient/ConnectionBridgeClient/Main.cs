@@ -7,35 +7,135 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-
 using System.Configuration;
-
 using Denyo.ConnectionBridge.DataStructures;
+using System.Net.NetworkInformation;
+using System.IO.Ports;
 
 namespace Denyo.ConnectionBridge.Client
 {
     public partial class Main : Form
     {
+        public static bool IsInternetConnected = false;
+
+        public static bool IsServerConnected = false;
+
+        private SerialPortHandler serialPortHandler;
         public Main()
         {
             InitializeComponent();
 
             InitializeMetaData();
 
-            InitializeFormSerialParams();
+            IsInternetConnected = CheckForInternetConnection();
+
+            //Check Server connection
+
+            InitializeFormParams();
+
+            InitializeSerialPort();
+
         }
 
-        private void InitializeFormSerialParams()
+        private void InitializeSerialPort()
+        {
+            //throw new NotImplementedException();
+            //serialPortHandler = new SerialPortHandler();
+        }
+
+        private bool CheckForInternetConnection()
+        {
+            try
+            {
+                Ping myPing = new Ping();
+                String host = "google.com";
+                byte[] buffer = new byte[32];
+                int timeout = 1000;
+                PingOptions pingOptions = new PingOptions();
+                PingReply reply = myPing.Send(host, timeout, buffer, pingOptions);
+                if (reply.Status == IPStatus.Success)
+                {
+                    return true;
+                }
+                else if (reply.Status == IPStatus.TimedOut)
+                {
+                    return IsInternetConnected;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        private void InitializeFormParams()
         {
             try
             {
 
+                SetPortNameValues(cboPort);
+                SetParityValues(cboParity);
+                SetStopBitValues(cboStop);
+                SetBaudRateValues(cboBaud);
+                lblDevice.Text = Metadata.AppID;
+                lblRemoteServer.Text = Metadata.ServerIP;
+                timer1.Interval = Metadata.TimerInterval;
+                timer1.Enabled = true;
+                rdoHex.Checked = true;
+                UpdateForm();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
 
             }
         }
+
+
+
+        public void SetPortNameValues(ComboBox obj)
+        {
+            foreach (string str in SerialPort.GetPortNames())
+            {
+                (obj).Items.Add(str);
+            }
+
+            if (!string.IsNullOrEmpty(Metadata.PreferredCOMPort))
+                cboPort.SelectedIndex = cboPort.FindString(Metadata.PreferredCOMPort);
+            else
+                cboPort.SelectedIndex = 0;
+        }
+
+        public void SetParityValues(ComboBox obj)
+        {
+            foreach (string str in Enum.GetNames(typeof(System.IO.Ports.Parity)))
+            {
+                (obj).Items.Add(str);
+            }
+
+            cboParity.SelectedIndex = 0;
+        }
+
+        public void SetStopBitValues(ComboBox obj)
+        {
+            foreach (string str in Enum.GetNames(typeof(System.IO.Ports.StopBits)))
+            {
+                (obj).Items.Add(str);
+            }
+            cboStop.SelectedIndex = 0;
+        }
+
+        public void SetBaudRateValues(ComboBox obj)
+        {
+            if (!string.IsNullOrEmpty(Metadata.PreferredBaudRate))
+                cboBaud.SelectedIndex = cboBaud.FindString(Metadata.PreferredBaudRate);
+            else
+                cboBaud.SelectedIndex = 0;
+        }
+
 
         private void InitializeMetaData()
         {
@@ -49,10 +149,12 @@ namespace Denyo.ConnectionBridge.Client
                 Metadata.PreferredBaudRate = ConfigurationManager.AppSettings["LCPBaud"];
 
                 Metadata.ServerIP = ConfigurationManager.AppSettings["RServer"];
-                Metadata.ServerPort= int.Parse(ConfigurationManager.AppSettings["RSPort"]);
+                Metadata.ServerPort = int.Parse(ConfigurationManager.AppSettings["RSPort"]);
+
+                Metadata.TimerInterval = int.Parse(ConfigurationManager.AppSettings["LoopTime"]);
 
             }
-            catch(Exception imEx1)
+            catch (Exception imEx1)
             {
 
             }
@@ -60,20 +162,20 @@ namespace Denyo.ConnectionBridge.Client
             try
             {
                 string HexaConfigFile = ConfigurationManager.AppSettings["HexaDictionary"];
-                if(string.IsNullOrEmpty(HexaConfigFile))
+                if (string.IsNullOrEmpty(HexaConfigFile))
                 {
                     MessageBox.Show("Unable to find HexaConfig");
                     Application.Exit();
                     //throw new Exception("Unable to find HexaConfig");
                 }
 
-                if(!System.IO.File.Exists(HexaConfigFile))
+                if (!System.IO.File.Exists(HexaConfigFile))
                 {
                     MessageBox.Show("Unable to find Hexa Config File");
                     Application.Exit();
                 }
 
-                foreach(string strlineitem in System.IO.File.ReadLines(HexaConfigFile))
+                foreach (string strlineitem in System.IO.File.ReadLines(HexaConfigFile))
                 {
                     try
                     {
@@ -84,17 +186,52 @@ namespace Denyo.ConnectionBridge.Client
                         hIN.Hexa = strlineitem.Split(",".ToCharArray())[0];
                         hIN.Name = strlineitem.Split(",".ToCharArray())[1];
                         hIN.PX = strlineitem.Substring(0, strlineitem.Length - strlineitem.IndexOf(','));
+
+                        Metadata.InputDictionary.Add(hIN);
                     }
-                    catch{ }
+                    catch { }
                 }
             }
-            catch(Exception imEx2)
+            catch (Exception imEx2)
             {
 
             }
         }
 
         private void Main_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void cmdSend_Click_1(object sender, EventArgs e)
+        {
+            timer1.Enabled = false;
+            //SendManualCommand(txtSend.Text);
+        }
+
+        private void timer1_Tick_1(object sender, EventArgs e)
+        {
+            UpdateForm();
+            if (IsInternetConnected && IsServerConnected)
+            {
+
+            }
+            else
+            {
+                //Save in local
+            }
+            //SendNextCommand();
+        }
+
+        private void UpdateForm()
+        {
+            IsInternetConnected = CheckForInternetConnection();
+            lblInternet.Text = IsInternetConnected ? "Connected" : "Not Connected";
+            lblTimer.Text = timer1.Enabled ? "ON" : "OFF";
+            lblTime.Text = DateTime.Now.ToString();
+        }
+
+        private void button1_Click(object sender, EventArgs e)
         {
 
         }
