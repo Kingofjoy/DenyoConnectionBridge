@@ -5,6 +5,8 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 
+using Denyo.ConnectionBridge.DataStructures;
+
 namespace Denyo.ConnectionBridge.Server.TCPServer
 {
     class Client
@@ -18,5 +20,7 @@ namespace Denyo.ConnectionBridge.Server.TCPServer
         public DateTime LastActive { get; set; }
 
         public string AuthToken { get; set; }
+
+        public AppType Type { get; set; }
     }
 }

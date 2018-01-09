@@ -9,6 +9,8 @@ using System.Configuration;
 using System.Net;
 
 using Denyo.ConnectionBridge.DataStructures;
+using Newtonsoft.Json;
+using System.Collections.Concurrent;
 
 namespace Denyo.ConnectionBridge.Server.TCPServer
 {
@@ -17,14 +19,16 @@ namespace Denyo.ConnectionBridge.Server.TCPServer
     {
         static TcpListener serverSocket = null;
 
-        static List<Client> myClients = new List<Client>();
+        static ConcurrentBag<Client> myClients = new ConcurrentBag<Client>();
 
-        static TcpClient clientSocket = default(TcpClient);
-        static NetworkStream networkStream = null;
-        static DateTime dtNow, dtNext;
+        static DateTime dtNext;
         static bool bHBInit = false;
 
-        public static int ListenerPort { get; }
+        public static bool bAcceptLoop = false;
+
+        public static int ListenerPort { get { return _ListenerPort; } }
+        static int _ListenerPort;
+
         public static bool IsHeartBeatActive = false;
         static int HeartBeatInterval;
 
@@ -35,6 +39,7 @@ namespace Denyo.ConnectionBridge.Server.TCPServer
         static public string AppType { get; set; }
 
         static public string AuthToken { get; set; }
+
 
         static Server()
         {
@@ -51,7 +56,7 @@ namespace Denyo.ConnectionBridge.Server.TCPServer
                 AppType = ConfigurationManager.AppSettings["AppType"];
                 AuthToken = ConfigurationManager.AppSettings["AuthToken"];
 
-                ListenerPort = int.Parse(ConfigurationManager.AppSettings["SLPort"]);
+                _ListenerPort = int.Parse(ConfigurationManager.AppSettings["SLPort"]);
             }
             catch(Exception ex)
             {
@@ -63,7 +68,7 @@ namespace Denyo.ConnectionBridge.Server.TCPServer
         {
             try
             {
-                serverSocket = new TcpListener(IPAddress.Any, ListenerPort));
+                serverSocket = new TcpListener(IPAddress.Any, ListenerPort);
                 serverSocket.Start();
 
                 IsActive = true;
@@ -77,11 +82,176 @@ namespace Denyo.ConnectionBridge.Server.TCPServer
 
         public static void AcceptIncomingConnetion()
         {
-            while (serverSocket.Pending())
+            Byte[] ByteData;
+
+            try
             {
-                Client myClient = new Client();
-                myClient.Instance = serverSocket.AcceptTcpClient();
-                myClient.Stream = myClient.Instance.GetStream();
+                while (serverSocket.Pending())
+                {
+                    Client myClient = new Client();
+                    myClient.Instance = serverSocket.AcceptTcpClient();
+                    myClient.Stream = myClient.Instance.GetStream();
+
+                    bool bSend, bReceive, bPacketSend, bPacketReceive;
+                    bSend = bReceive = bPacketSend = bPacketReceive = false;
+                    string data=string.Empty;
+                    DataPacket dpTest=new DataPacket();
+
+                    //Send Test
+                    #region Init_Send_Test
+
+                    ByteData = Encoding.ASCII.GetBytes("SHB " + DateTime.Now.ToString("dd MM yyyy HH mm ss") + "$");
+
+                    for (int i = 0; i < 2; i++)
+                    {
+                        try
+                        {
+                            if (!myClient.Instance.Connected || !myClient.Stream.CanWrite)
+                                for (int j = 0; j <= int.MaxValue; j++) { /* give a small delay */ }
+
+                            myClient.Stream.Write(ByteData, 0, ByteData.Length);
+                            myClient.Stream.Flush();
+
+                            bSend = true;
+
+                        }
+                        catch { }
+
+                        if(!bSend)
+                            for (int j = 0; j <= int.MaxValue; j++) { /* give a small delay */ }
+                    }
+
+                    #endregion
+
+                    //Receive Test
+                    #region Init_Receive_Test
+
+                    for (int i = 0; i < 2; i++)
+                    {
+                        try
+                        {
+                            if (myClient.Instance.Connected && myClient.Instance.Available > 0 && !bReceive)
+                            {
+
+                                ByteData = new byte[myClient.Instance.ReceiveBufferSize];
+                                int recb = myClient.Stream.Read(ByteData, 0, myClient.Instance.ReceiveBufferSize);
+
+                                if (recb == 0) continue; 
+
+                                data = System.Text.Encoding.ASCII.GetString(ByteData);
+
+                                if(data.Length>0)
+                                    bReceive = true;
+                            }
+
+                        }
+                        catch { }
+
+                        if (!bReceive)
+                            for (int j = 0; j <= int.MaxValue; j++) { /* give a small delay */ }
+                    }
+
+                    #endregion
+
+                    //Send Packet Test
+                    #region Init_SendPacket_Test
+
+                    for (int i = 0; i < 2; i++)
+                    {
+
+                        dpTest = new DataPacket();
+                        dpTest.Message = "Test Data";
+                        dpTest.SenderID = AppID;
+                        dpTest.SenderType = DataStructures.AppType.Server;
+                        dpTest.RecepientID = "Unknown";
+                        dpTest.RecepientType = DataStructures.AppType.Client;
+                        dpTest.TimeStamp = DateTime.Now;
+
+                        if (bPacketSend) continue;
+
+                        try
+                        {
+                            data = JsonConvert.SerializeObject(dpTest);
+                            ByteData = Encoding.ASCII.GetBytes(data);
+
+                            if (!myClient.Instance.Connected || !myClient.Stream.CanWrite)
+                                for (int j = 0; j <= int.MaxValue; j++) { /* give a small delay */ }
+
+                            myClient.Stream.Write(ByteData, 0, ByteData.Length);
+                            myClient.Stream.Flush();
+
+                            bPacketSend = true;
+                        }
+                        catch (Exception spEx)
+                        {
+                            bPacketSend = false;
+
+                        }
+
+                        if (!bPacketSend)
+                            for (int j = 0; j <= int.MaxValue; j++) { /* give a small delay */ }
+
+                    }
+                    #endregion
+
+                    //Receive Packet Test
+                    #region Init_ReceivePacketTest
+
+                    for (int i = 0; i < 2; i++)
+                    {
+
+                        if (bPacketReceive) continue;
+
+                        try
+                        {
+                            if (myClient.Instance.Connected && myClient.Instance.Available > 0)
+                            {
+
+                                ByteData = new byte[myClient.Instance.ReceiveBufferSize];
+                                int recb = myClient.Stream.Read(ByteData, 0, myClient.Instance.ReceiveBufferSize);
+
+                                if (recb == 0) continue;
+
+                                data = System.Text.Encoding.ASCII.GetString(ByteData);
+
+                                if (!(data.Length > 0))
+                                {
+                                    bPacketReceive = false;
+                                    continue;
+                                }
+
+                                dpTest = new DataPacket();
+                                dpTest = JsonConvert.DeserializeObject<DataPacket>(data);
+
+                                if (dpTest.SenderID != string.Empty)
+                                {
+                                    myClient.Name = dpTest.SenderID;
+                                    myClient.Type = dpTest.SenderType;
+                                    myClient.LastActive = DateTime.Now;
+
+                                    bPacketReceive = true;
+                                }
+                            }
+
+                        }
+                        catch {
+                            bPacketReceive = false;
+                        }
+
+                        if (!bPacketReceive)
+                            for (int j = 0; j <= int.MaxValue; j++) { /* give a small delay */ }
+                    }
+                    #endregion
+
+                    if(myClient.Name.Length>0)
+                    {
+                        myClients.Add(myClient);
+                    }
+                }
+            }
+            catch(Exception ICex)
+            {
+
             }
         }
 
@@ -96,14 +266,11 @@ namespace Denyo.ConnectionBridge.Server.TCPServer
         }
 
         static void Log(DataPacket packet)
-        { }
+        {
+
+        }
 
     }
 
-    public class Config
-    {
-        public int ListenerPort { get; set; }
-
-
-    }
+    
 }
