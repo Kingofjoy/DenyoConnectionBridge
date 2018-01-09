@@ -33,4 +33,10 @@ namespace Denyo.ConnectionBridge.Client
         public static List<HexaInput> InputDictionary = new List<HexaInput>();
 
     }
+
+    public enum CommunicationMode
+    {
+        HEXA,
+        TEXT
+    }
 }

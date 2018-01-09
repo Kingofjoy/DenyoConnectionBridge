@@ -528,7 +528,7 @@ namespace Denyo.ConnectionBridge.Client
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Button cmdSend;
         private System.Windows.Forms.TextBox txtSend;
-        private System.Windows.Forms.RichTextBox rtbDisplay;
+        public System.Windows.Forms.RichTextBox rtbDisplay;
         private System.Windows.Forms.GroupBox GroupBox1;
         private System.Windows.Forms.RadioButton rdoText;
         private System.Windows.Forms.RadioButton rdoHex;
