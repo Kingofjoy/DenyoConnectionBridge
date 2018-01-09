@@ -41,7 +41,7 @@ namespace Denyo.ConnectionBridge.DataStructures
     }
 
     [Serializable]
-    public class DataPacet
+    public class DataPacket
     {
         public AppType SenderType { get; set; }
 

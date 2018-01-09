@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 using System.Configuration;
 using System.Net;
 
+using Denyo.ConnectionBridge.DataStructures;
+
 namespace Denyo.ConnectionBridge.Server.TCPServer
 {
 
@@ -63,6 +65,8 @@ namespace Denyo.ConnectionBridge.Server.TCPServer
             {
                 serverSocket = new TcpListener(IPAddress.Any, ListenerPort));
                 serverSocket.Start();
+
+                IsActive = true;
             }
             catch(Exception ex)
             {
@@ -81,6 +85,18 @@ namespace Denyo.ConnectionBridge.Server.TCPServer
             }
         }
 
+        static void Log(string Message)
+        {
+
+        }
+
+        static void Log(Exception ex,string Message="")
+        {
+
+        }
+
+        static void Log(DataPacket packet)
+        { }
 
     }
 
