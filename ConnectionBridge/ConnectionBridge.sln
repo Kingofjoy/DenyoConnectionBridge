@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunicationManager", "Fra
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataStructures", "Framework\DataStructures\DataStructures\DataStructures.csproj", "{D32BA6C1-A167-4E95-ADF6-7C631981F167}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TCPServer", "ConnectionBridgeServer\TCPServer\TCPServer\TCPServer.csproj", "{9E02A300-633C-4CEE-8378-1A8835F90C7C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -29,6 +31,10 @@ Global
 		{D32BA6C1-A167-4E95-ADF6-7C631981F167}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D32BA6C1-A167-4E95-ADF6-7C631981F167}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D32BA6C1-A167-4E95-ADF6-7C631981F167}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9E02A300-633C-4CEE-8378-1A8835F90C7C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9E02A300-633C-4CEE-8378-1A8835F90C7C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9E02A300-633C-4CEE-8378-1A8835F90C7C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9E02A300-633C-4CEE-8378-1A8835F90C7C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
