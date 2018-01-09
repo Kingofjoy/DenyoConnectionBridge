@@ -10,6 +10,7 @@ namespace Denyo.ConnectionBridge.DataStructures
     {
     }
 
+    [Serializable]
     public class HexaInput
     {
         public string Raw { get; set; }
@@ -31,5 +32,29 @@ namespace Denyo.ConnectionBridge.DataStructures
         public string PX { get; set; }
 
 
+    }
+
+    [Serializable]
+    public enum AppType
+    {
+        Server, Client, Moderator, Listener
+    }
+
+    [Serializable]
+    public class DataPacet
+    {
+        public AppType SenderType { get; set; }
+
+        public string SenderID { get; set; }
+
+        public AppType RecepientType { get; set; }
+
+        public string RecepientID { get; set; }
+
+        public DateTime TimeStamp { get; set; }
+
+        public string MsgID { get; set; }
+
+        public string Message { get; set; }
     }
 }
