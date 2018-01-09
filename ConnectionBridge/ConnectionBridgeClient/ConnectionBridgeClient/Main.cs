@@ -21,6 +21,8 @@ namespace Denyo.ConnectionBridge.Client
         public static bool IsServerConnected = false;
 
         private SerialPortHandler serialPortHandler;
+
+        public static int cmdCounter;
         public Main()
         {
             InitializeComponent();
@@ -33,14 +35,23 @@ namespace Denyo.ConnectionBridge.Client
 
             InitializeFormParams();
 
-            InitializeSerialPort();
 
         }
 
         private void InitializeSerialPort()
         {
-            //throw new NotImplementedException();
-            //serialPortHandler = new SerialPortHandler();
+            if(string.IsNullOrEmpty(cboBaud.Text) || string.IsNullOrEmpty(cboData.Text) || string.IsNullOrEmpty(cboStop.Text) || string.IsNullOrEmpty(cboParity.Text) || string.IsNullOrEmpty(cboPort.Text))
+            {
+                MessageBox.Show("Unable to initialize Serial Port");
+                Environment.Exit(1);
+            }
+            int baudRate = int.Parse(cboBaud.Text);
+            int dataBits = int.Parse(cboData.Text);
+            StopBits stopBits = (StopBits)Enum.Parse(typeof(StopBits), cboStop.Text);
+            Parity parity = (Parity)Enum.Parse(typeof(Parity), cboParity.Text);
+            string portName = cboPort.Text;
+            serialPortHandler = new SerialPortHandler(baudRate, dataBits, stopBits, parity, portName);
+            serialPortHandler.FormRef = this;
         }
 
         private bool CheckForInternetConnection()
@@ -200,7 +211,15 @@ namespace Denyo.ConnectionBridge.Client
 
         private void Main_Load(object sender, EventArgs e)
         {
+            try
+            {
+                InitializeSerialPort();
 
+            }
+            catch (Exception ex)
+            {
+
+            }
         }
 
         private void cmdSend_Click_1(object sender, EventArgs e)
@@ -214,13 +233,12 @@ namespace Denyo.ConnectionBridge.Client
             UpdateForm();
             if (IsInternetConnected && IsServerConnected)
             {
-
+                serialPortHandler.SendNextCommand(rdoHex.Checked ? Metadata.InputDictionary[cmdCounter].Hexa : Metadata.InputDictionary[cmdCounter].Name, rdoHex.Checked ? CommunicationMode.HEXA : CommunicationMode.TEXT);
             }
             else
             {
                 //Save in local
             }
-            //SendNextCommand();
         }
 
         private void UpdateForm()
@@ -230,6 +248,8 @@ namespace Denyo.ConnectionBridge.Client
             lblTimer.Text = timer1.Enabled ? "ON" : "OFF";
             lblTime.Text = DateTime.Now.ToString();
         }
+
+        
 
         private void button1_Click(object sender, EventArgs e)
         {
