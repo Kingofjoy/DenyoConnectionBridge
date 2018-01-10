@@ -552,6 +552,6 @@ namespace Denyo.ConnectionBridge.Client
         private System.Windows.Forms.Label lblDevice;
         private System.Windows.Forms.Label lblHC;
         private System.Windows.Forms.Label label14;
-        private System.Windows.Forms.Timer timer1;
+        public System.Windows.Forms.Timer timer1;
     }
 }

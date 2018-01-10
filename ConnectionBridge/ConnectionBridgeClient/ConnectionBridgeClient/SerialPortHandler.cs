@@ -77,6 +77,7 @@ namespace Denyo.ConnectionBridge.Client
 
         public void SendManualCommand(string cmd)
         {
+            FormRef.timer1.Enabled = false;
             _mode = CommunicationMode.TEXT;
             DataSender(cmd);
         }
