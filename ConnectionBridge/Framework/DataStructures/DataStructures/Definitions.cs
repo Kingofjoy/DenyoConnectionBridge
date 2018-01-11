@@ -34,6 +34,13 @@ namespace Denyo.ConnectionBridge.DataStructures
 
     }
 
+    public enum LogType
+    {
+        Message,
+        Warning,
+        Error
+    }
+
     [Serializable]
     public enum AppType
     {
@@ -56,5 +63,7 @@ namespace Denyo.ConnectionBridge.DataStructures
         public string MsgID { get; set; }
 
         public string Message { get; set; }
+
+        public bool IsManualCmd { get; set; }
     }
 }

@@ -22,6 +22,8 @@ namespace Denyo.ConnectionBridge.Client
 
         private SerialPortHandler serialPortHandler;
 
+        private TcpClientHandler tcpClientHandler;
+
         public static int cmdCounter;
         public Main()
         {
@@ -35,7 +37,13 @@ namespace Denyo.ConnectionBridge.Client
 
             InitializeFormParams();
 
+            InitializeTcpClientHandler();
+        }
 
+        private void InitializeTcpClientHandler()
+        {
+            tcpClientHandler = new TcpClientHandler();
+            tcpClientHandler.FormRef = this;
         }
 
         private void InitializeSerialPort()
@@ -249,7 +257,15 @@ namespace Denyo.ConnectionBridge.Client
             lblTime.Text = DateTime.Now.ToString();
         }
 
-        
+        public void SendManualCommand(string cmd)
+        {
+            serialPortHandler.SendManualCommand(cmd);
+        }
+
+        public void SaveResponse(string response)
+        {
+            tcpClientHandler.SendResponseToServer(response);
+        }
 
         private void button1_Click(object sender, EventArgs e)
         {

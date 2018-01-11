@@ -21,14 +21,15 @@ namespace Denyo.ConnectionBridge.Client
 
         BackgroundWorker bwReceiver = new BackgroundWorker();
 
+        public Main FormRef { get; set; }
 
-        public string AuthToken { get; set; }
+        private string AuthToken { get; set; }
 
-        public AppType Type { get; set; }
+        private AppType Type { get; set; }
 
-        public string AppID { get; set; }
+        private string AppID { get; set; }
 
-        public string AppType { get; set; }
+        private string AppType { get; set; }
 
         private string RSName { get; set; }
 
@@ -49,10 +50,14 @@ namespace Denyo.ConnectionBridge.Client
                 RSPort = int.Parse(ConfigurationManager.AppSettings["RSPort"]);
 
                 Client.Connect(RSName, RSPort);
+
+                bwReceiver.WorkerSupportsCancellation = true;
+                bwReceiver.DoWork += BwReceiver_DoWork;
+                bwReceiver.RunWorkerAsync();
             }
             catch (Exception ex)
             {
-
+                Logger.Log("TCP Handler Initialization failed.", ex);
             }
         }
 
@@ -75,7 +80,7 @@ namespace Denyo.ConnectionBridge.Client
 
                         if (returndata.Length == 0)
                         {
-                            return;
+                            continue;
                         }
 
                         cmd = new DataPacket();
@@ -83,7 +88,12 @@ namespace Denyo.ConnectionBridge.Client
 
                         if (cmd.SenderID != string.Empty)
                         {
-                           
+                            if(Metadata.InputDictionary.Where(_ => _.Name.Equals(cmd.Message)).Count() == 0 )
+                            {
+                                // send invalid cmd response to server
+                                continue;
+                            }
+                            FormRef.SendManualCommand(cmd.Message);
                         }
 
                     }
@@ -99,6 +109,11 @@ namespace Denyo.ConnectionBridge.Client
             {
                 Logger.Log(ex.Message);
             }
+        }
+
+        public void SendResponseToServer(string response)
+        {
+
         }
     }
 }

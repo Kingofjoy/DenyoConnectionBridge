@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Denyo.ConnectionBridge.DataStructures;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
@@ -10,10 +11,13 @@ namespace Denyo.ConnectionBridge.Client
     public static class Logger
     {
         private static bool IsEnabled;
+
+        private static LogType Type;
         static Logger()
         {
             // log file
             IsEnabled = bool.Parse(ConfigurationManager.AppSettings["Logger"]);
+            Type = LogType.Message;
         }
 
         public static void Log(string msg)
@@ -28,8 +32,9 @@ namespace Denyo.ConnectionBridge.Client
         {
             if (IsEnabled)
             {
-
+                // log type shold be error
             }
         }
+
     }
 }
