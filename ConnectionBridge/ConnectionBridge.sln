@@ -13,6 +13,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataStructures", "Framework
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TCPServer", "ConnectionBridgeServer\TCPServer\TCPServer\TCPServer.csproj", "{9E02A300-633C-4CEE-8378-1A8835F90C7C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestHost", "ConnectionBridgeServer\TestHost\TestHost\TestHost.csproj", "{0134AADB-B648-46E0-AD08-EBEFD9A74698}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestClient", "ConnectionBridgeClient\TestClient\TestClient.csproj", "{5F18ACD1-18CA-4BF8-9A93-1490750790CA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -35,6 +39,14 @@ Global
 		{9E02A300-633C-4CEE-8378-1A8835F90C7C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9E02A300-633C-4CEE-8378-1A8835F90C7C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9E02A300-633C-4CEE-8378-1A8835F90C7C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0134AADB-B648-46E0-AD08-EBEFD9A74698}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0134AADB-B648-46E0-AD08-EBEFD9A74698}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0134AADB-B648-46E0-AD08-EBEFD9A74698}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0134AADB-B648-46E0-AD08-EBEFD9A74698}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5F18ACD1-18CA-4BF8-9A93-1490750790CA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5F18ACD1-18CA-4BF8-9A93-1490750790CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5F18ACD1-18CA-4BF8-9A93-1490750790CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5F18ACD1-18CA-4BF8-9A93-1490750790CA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
