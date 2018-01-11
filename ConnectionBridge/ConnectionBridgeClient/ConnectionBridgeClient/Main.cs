@@ -33,8 +33,6 @@ namespace Denyo.ConnectionBridge.Client
 
             IsInternetConnected = CheckForInternetConnection();
 
-            //Check Server connection
-
             InitializeFormParams();
 
             InitializeTcpClientHandler();
@@ -44,6 +42,8 @@ namespace Denyo.ConnectionBridge.Client
         {
             tcpClientHandler = new TcpClientHandler();
             tcpClientHandler.FormRef = this;
+            //Todo : Check Server connection
+
         }
 
         private void InitializeSerialPort()
@@ -232,8 +232,8 @@ namespace Denyo.ConnectionBridge.Client
 
         private void cmdSend_Click_1(object sender, EventArgs e)
         {
-            timer1.Enabled = false;
-            //SendManualCommand(txtSend.Text);
+            //timer1.Enabled = false;
+            SendManualCommand(txtSend.Text);
         }
 
         private void timer1_Tick_1(object sender, EventArgs e)
@@ -256,7 +256,7 @@ namespace Denyo.ConnectionBridge.Client
             lblTimer.Text = timer1.Enabled ? "ON" : "OFF";
             lblTime.Text = DateTime.Now.ToString();
         }
-
+        `1
         public void SendManualCommand(string cmd)
         {
             serialPortHandler.SendManualCommand(cmd);
