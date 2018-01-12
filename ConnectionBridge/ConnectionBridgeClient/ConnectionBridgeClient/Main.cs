@@ -24,7 +24,7 @@ namespace Denyo.ConnectionBridge.Client
 
         private TcpClientHandler tcpClientHandler;
 
-        public static int cmdCounter = 0;
+        public static int cmdCounter;
         public Main()
         {
             InitializeComponent();
@@ -48,10 +48,10 @@ namespace Denyo.ConnectionBridge.Client
 
         private void InitializeSerialPort()
         {
-            if (string.IsNullOrEmpty(cboBaud.Text) || string.IsNullOrEmpty(cboData.Text) || string.IsNullOrEmpty(cboStop.Text) || string.IsNullOrEmpty(cboParity.Text) || string.IsNullOrEmpty(cboPort.Text))
+            if(string.IsNullOrEmpty(cboBaud.Text) || string.IsNullOrEmpty(cboData.Text) || string.IsNullOrEmpty(cboStop.Text) || string.IsNullOrEmpty(cboParity.Text) || string.IsNullOrEmpty(cboPort.Text))
             {
                 MessageBox.Show("Unable to initialize Serial Port");
-                //Environment.Exit(1);
+                Environment.Exit(1);
             }
             int baudRate = int.Parse(cboBaud.Text);
             int dataBits = int.Parse(cboData.Text);
@@ -60,7 +60,6 @@ namespace Denyo.ConnectionBridge.Client
             string portName = cboPort.Text;
             serialPortHandler = new SerialPortHandler(baudRate, dataBits, stopBits, parity, portName);
             serialPortHandler.FormRef = this;
-            timer1.Enabled = true;
         }
 
         private bool CheckForInternetConnection()
@@ -101,11 +100,10 @@ namespace Denyo.ConnectionBridge.Client
                 SetParityValues(cboParity);
                 SetStopBitValues(cboStop);
                 SetBaudRateValues(cboBaud);
-                SetDataBitValues(cboData);
                 lblDevice.Text = Metadata.AppID;
                 lblRemoteServer.Text = Metadata.ServerIP;
                 timer1.Interval = Metadata.TimerInterval;
-                timer1.Enabled = false;
+                timer1.Enabled = true;
                 rdoHex.Checked = true;
                 UpdateForm();
             }
@@ -146,7 +144,7 @@ namespace Denyo.ConnectionBridge.Client
             {
                 (obj).Items.Add(str);
             }
-            cboStop.SelectedIndex = 1;
+            cboStop.SelectedIndex = 0;
         }
 
         public void SetBaudRateValues(ComboBox obj)
@@ -155,11 +153,6 @@ namespace Denyo.ConnectionBridge.Client
                 cboBaud.SelectedIndex = cboBaud.FindString(Metadata.PreferredBaudRate);
             else
                 cboBaud.SelectedIndex = 0;
-        }
-
-        public void SetDataBitValues(ComboBox obj)
-        {
-            cboData.SelectedIndex = 1;
         }
 
 
@@ -246,10 +239,8 @@ namespace Denyo.ConnectionBridge.Client
         private void timer1_Tick_1(object sender, EventArgs e)
         {
             UpdateForm();
-            if (IsInternetConnected)
+            if (IsInternetConnected && IsServerConnected)
             {
-                if (cmdCounter >= Metadata.InputDictionary.Count)
-                    cmdCounter = 0;
                 serialPortHandler.SendNextCommand(rdoHex.Checked ? Metadata.InputDictionary[cmdCounter].Hexa : Metadata.InputDictionary[cmdCounter].Name, rdoHex.Checked ? CommunicationMode.HEXA : CommunicationMode.TEXT);
             }
             else
@@ -265,6 +256,7 @@ namespace Denyo.ConnectionBridge.Client
             lblTimer.Text = timer1.Enabled ? "ON" : "OFF";
             lblTime.Text = DateTime.Now.ToString();
         }
+        
         public void SendManualCommand(string cmd)
         {
             serialPortHandler.SendManualCommand(cmd);
