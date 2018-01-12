@@ -93,6 +93,10 @@ namespace Denyo.ConnectionBridge.Client
                     else
                     {
                         Main.cmdCounter++;
+                        if (Metadata.InputDictionary.Count > Main.cmdCounter)
+                        {
+                            FormRef.timer1.Enabled = false;
+                        }
                     }
                 }
                 return;
@@ -107,6 +111,7 @@ namespace Denyo.ConnectionBridge.Client
                 }
                 else
                 {
+                    UpdateLogWindow("inside next cmd:\n");
                     _isManualCmd = IsManulalCmd;
                     _mode = mode;
                     DataSender(cmd, mode);
@@ -123,6 +128,8 @@ namespace Denyo.ConnectionBridge.Client
 
         private void DataSender(string cmd, CommunicationMode mode)
         {
+            UpdateLogWindow("inside sender:"+ cmd+"   , " + mode.ToString() + "\n");
+
             switch (mode)
             {
                 case CommunicationMode.TEXT:
@@ -137,6 +144,8 @@ namespace Denyo.ConnectionBridge.Client
                     }
                     catch (Exception ex)
                     {
+                        UpdateLogWindow("DataSender failed:" + ex.Message);
+
                         Logger.Log("DataSender: Failed.", ex);
                         throw;
                     }
@@ -157,27 +166,40 @@ namespace Denyo.ConnectionBridge.Client
 
         private void DataReceiver(object sender, SerialDataReceivedEventArgs e)
         {
-            GotResponseForPrevCmd = true;
-            if (!CurrentCmd.Item3)
-                Main.cmdCounter++;
-            string response = string.Empty;
-            switch (CurrentCmd.Item2)
-            {
-                case CommunicationMode.TEXT:
-                    response = serialPort.ReadExisting();
-                    return;
+            try {
+                UpdateLogWindow("DataReceiver:\n");
 
-                case CommunicationMode.HEXA:
-                    {
-                        int bytesToRead = serialPort.BytesToRead;
-                        byte[] buffer = new byte[bytesToRead];
-                        serialPort.Read(buffer, 0, bytesToRead);
-                        response = ByteToHex(buffer);
-                        return;
-                    }
+                GotResponseForPrevCmd = true;
+                if (!CurrentCmd.Item3)
+                {
+                    Main.cmdCounter++;
+                }
+                string response = string.Empty;
+                UpdateLogWindow("CommunicationMode:" + CurrentCmd.Item2 + "\n");
+
+                switch (CurrentCmd.Item2)
+                {
+                    case CommunicationMode.TEXT:
+                        response = serialPort.ReadExisting();
+                        break;
+
+                    case CommunicationMode.HEXA:
+                        {
+                            int bytesToRead = serialPort.BytesToRead;
+                            byte[] buffer = new byte[bytesToRead];
+                            serialPort.Read(buffer, 0, bytesToRead);
+                            response = ByteToHex(buffer);
+                            break;
+                        }
+                }
+                UpdateLogWindow("Response:" + response + "\n");
+                SaveResponse(response, CurrentCmd.Item3);
             }
-            UpdateLogWindow(response + "\n");
-            SaveResponse(response, CurrentCmd.Item3);
+            catch(Exception ex)
+            {
+                UpdateLogWindow("Receiver Error:"+ex.Message + "\n");
+
+            }
         }
 
         private void SaveResponse(string response, bool IsManualCmd)
@@ -185,9 +207,17 @@ namespace Denyo.ConnectionBridge.Client
             FormRef.SaveResponse(response);
         }
 
-        private void UpdateLogWindow(string log)
+        private void UpdateLogWindow(string log, bool init = false)
         {
-            FormRef.rtbDisplay.AppendText(log);
+            try {
+                if (init)
+                    FormRef.rtbDisplay.Clear();
+                FormRef.rtbDisplay.AppendText(log);
+            }
+            catch(Exception ex)
+            {
+
+            }
         }
 
         private string ByteToHex(byte[] comByte)

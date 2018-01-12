@@ -84,7 +84,7 @@ namespace Denyo.ConnectionBridge.Client
                         }
 
                         cmd = new DataPacket();
-                        cmd = JsonConvert.DeserializeObject<DataPacket>(returndata);
+                        //cmd = JsonConvert.DeserializeObject<DataPacket>(returndata);
 
                         if (cmd.SenderID != string.Empty)
                         {

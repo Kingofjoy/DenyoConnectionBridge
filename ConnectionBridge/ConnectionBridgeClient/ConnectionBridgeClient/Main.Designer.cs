@@ -166,6 +166,7 @@ namespace Denyo.ConnectionBridge.Client
             "300",
             "600",
             "1200",
+            "1900",
             "2400",
             "4800",
             "9600",
