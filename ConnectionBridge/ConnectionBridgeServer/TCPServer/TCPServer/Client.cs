@@ -22,6 +22,5 @@ namespace Denyo.ConnectionBridge.Server.TCPServer
         public string AuthToken { get; set; }
 
         public AppType Type { get; set; }
-
     }
 }
