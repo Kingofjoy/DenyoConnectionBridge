@@ -256,7 +256,7 @@ namespace Denyo.ConnectionBridge.Client
             lblTimer.Text = timer1.Enabled ? "ON" : "OFF";
             lblTime.Text = DateTime.Now.ToString();
         }
-        `1
+        
         public void SendManualCommand(string cmd)
         {
             serialPortHandler.SendManualCommand(cmd);

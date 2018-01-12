@@ -17,6 +17,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestHost", "ConnectionBridg
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestClient", "ConnectionBridgeClient\TestClient\TestClient.csproj", "{5F18ACD1-18CA-4BF8-9A93-1490750790CA}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RefDlls", "RefDlls", "{D8BDAB34-ADA8-4A55-9173-7A597ED6BF48}"
+	ProjectSection(SolutionItems) = preProject
+		RefDlls\Newtonsoft.Json.dll = RefDlls\Newtonsoft.Json.dll
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
