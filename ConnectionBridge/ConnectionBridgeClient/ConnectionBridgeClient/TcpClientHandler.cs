@@ -486,6 +486,7 @@ namespace Denyo.ConnectionBridge.Client
                     ServerStream.Write(ByteData, 0, ByteData.Length);
                     ServerStream.Flush();
                     IsSent = true;
+                    Logger.Log(AppID + " : " + dpDataToSend.Message);
                 }
                 else
                 {
