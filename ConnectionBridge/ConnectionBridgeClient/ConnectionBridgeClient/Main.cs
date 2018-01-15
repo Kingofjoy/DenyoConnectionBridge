@@ -24,18 +24,13 @@ namespace Denyo.ConnectionBridge.Client
 
         private TcpClientHandler tcpClientHandler;
 
+        bool bInitAll;
+
         public static int cmdCounter;
         public Main()
         {
             InitializeComponent();
 
-            InitializeMetaData();
-
-            IsInternetConnected = CheckForInternetConnection();
-
-            InitializeFormParams();
-
-            InitializeTcpClientHandler();
         }
 
         private void InitializeTcpClientHandler()
@@ -48,18 +43,25 @@ namespace Denyo.ConnectionBridge.Client
 
         private void InitializeSerialPort()
         {
-            if(string.IsNullOrEmpty(cboBaud.Text) || string.IsNullOrEmpty(cboData.Text) || string.IsNullOrEmpty(cboStop.Text) || string.IsNullOrEmpty(cboParity.Text) || string.IsNullOrEmpty(cboPort.Text))
+            try
             {
-                MessageBox.Show("Unable to initialize Serial Port");
-                Environment.Exit(1);
+                if (string.IsNullOrEmpty(cboBaud.Text) || string.IsNullOrEmpty(cboData.Text) || string.IsNullOrEmpty(cboStop.Text) || string.IsNullOrEmpty(cboParity.Text) || string.IsNullOrEmpty(cboPort.Text))
+                {
+                    MessageBox.Show("Unable to initialize Serial Port");
+                    //Environment.Exit(1);
+                }
+                int baudRate = int.Parse(cboBaud.Text);
+                int dataBits = int.Parse(cboData.Text);
+                StopBits stopBits = (StopBits)Enum.Parse(typeof(StopBits), cboStop.Text);
+                Parity parity = (Parity)Enum.Parse(typeof(Parity), cboParity.Text);
+                string portName = cboPort.Text;
+                serialPortHandler = new SerialPortHandler(baudRate, dataBits, stopBits, parity, portName);
+                serialPortHandler.FormRef = this;
             }
-            int baudRate = int.Parse(cboBaud.Text);
-            int dataBits = int.Parse(cboData.Text);
-            StopBits stopBits = (StopBits)Enum.Parse(typeof(StopBits), cboStop.Text);
-            Parity parity = (Parity)Enum.Parse(typeof(Parity), cboParity.Text);
-            string portName = cboPort.Text;
-            serialPortHandler = new SerialPortHandler(baudRate, dataBits, stopBits, parity, portName);
-            serialPortHandler.FormRef = this;
+            catch(Exception INITSRER)
+            {
+                Logger.Log("Unable to initialize Serial Port Err : " + INITSRER.Message);
+            }
         }
 
         private bool CheckForInternetConnection()
@@ -103,7 +105,7 @@ namespace Denyo.ConnectionBridge.Client
                 lblDevice.Text = Metadata.AppID;
                 lblRemoteServer.Text = Metadata.ServerIP;
                 timer1.Interval = Metadata.TimerInterval;
-                timer1.Enabled = true;
+                if(bInitAll) timer1.Enabled = true; //TEST
                 rdoHex.Checked = true;
                 UpdateForm();
             }
@@ -184,14 +186,16 @@ namespace Denyo.ConnectionBridge.Client
                 if (string.IsNullOrEmpty(HexaConfigFile))
                 {
                     MessageBox.Show("Unable to find HexaConfig");
-                    Application.Exit();
+                    Logger.Log("Unable to find HexaConfig");
+                    //Application.Exit();
                     //throw new Exception("Unable to find HexaConfig");
                 }
 
                 if (!System.IO.File.Exists(HexaConfigFile))
                 {
                     MessageBox.Show("Unable to find Hexa Config File");
-                    Application.Exit();
+                    //Application.Exit(); //test
+                    Logger.Log("Unable to find Hexa Config File");
                 }
 
                 foreach (string strlineitem in System.IO.File.ReadLines(HexaConfigFile))
@@ -221,8 +225,8 @@ namespace Denyo.ConnectionBridge.Client
         {
             try
             {
-                InitializeSerialPort();
-
+                Logger.FormRef = this;
+                UpdateForm();
             }
             catch (Exception ex)
             {
@@ -238,6 +242,9 @@ namespace Denyo.ConnectionBridge.Client
 
         private void timer1_Tick_1(object sender, EventArgs e)
         {
+            if (!bInitAll)
+                InitAll();
+
             UpdateForm();
             if (IsInternetConnected && IsServerConnected)
             {
@@ -249,12 +256,39 @@ namespace Denyo.ConnectionBridge.Client
             }
         }
 
+        private void InitAll()
+        {
+            try
+            {
+                timer1.Enabled = false;
+
+                InitializeMetaData();
+
+                IsInternetConnected = CheckForInternetConnection();
+
+                InitializeFormParams();
+
+                InitializeTcpClientHandler();
+
+                InitializeSerialPort();
+
+                timer1.Enabled = true;
+            }
+            catch(Exception ex)
+            {
+
+            }
+            bInitAll = true;
+        }
+
         private void UpdateForm()
         {
             IsInternetConnected = CheckForInternetConnection();
+            lblRemoteServer.Text = tcpClientHandler.ServerID;
             lblInternet.Text = IsInternetConnected ? "Connected" : "Not Connected";
             lblTimer.Text = timer1.Enabled ? "ON" : "OFF";
             lblTime.Text = DateTime.Now.ToString();
+            lblHC.Text = Metadata.InputDictionary.Count.ToString();
         }
         
         public void SendManualCommand(string cmd)
@@ -269,7 +303,21 @@ namespace Denyo.ConnectionBridge.Client
 
         private void button1_Click(object sender, EventArgs e)
         {
+            try
+            {
+                tcpClientHandler.SendResponseToServer(txtSend.Text);
+                txtSend.Clear();
+            }
+            catch(Exception ex)
+            {
 
+            }
+
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            tcpClientHandler.SendResponseToServer(txtSend.Text);
         }
     }
 }

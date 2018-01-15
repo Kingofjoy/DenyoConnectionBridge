@@ -193,7 +193,7 @@ namespace Denyo.ConnectionBridge.Client
                         }
                 }
                 UpdateLogWindow("Response:" + response + "\n");
-                SaveResponse(response, CurrentCmd.Item3);
+                SaveResponse("[ Request: " +CurrentCmd.Item1 + " ][ Response: " + response + " ]", CurrentCmd.Item3);
             }
             catch(Exception ex)
             {

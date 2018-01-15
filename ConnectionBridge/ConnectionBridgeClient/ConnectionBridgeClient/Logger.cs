@@ -13,6 +13,9 @@ namespace Denyo.ConnectionBridge.Client
         private static bool IsEnabled;
 
         private static LogType Type;
+
+        public static Main FormRef { get; set; }
+
         static Logger()
         {
             // log file
@@ -22,7 +25,24 @@ namespace Denyo.ConnectionBridge.Client
 
         public static void Log(string msg)
         {
-            if(IsEnabled)
+            try
+            {
+                if (!(FormRef == null))
+                {
+                    FormRef.rtbDisplay.AppendText(msg);
+                    FormRef.rtbDisplay.AppendText(Environment.NewLine);
+                    if(FormRef.rtbDisplay.TextLength>5000)
+                    {
+                        FormRef.rtbDisplay.Text = FormRef.rtbDisplay.Text.Substring(FormRef.rtbDisplay.Text.IndexOf(Environment.NewLine, 0, 10));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+
+            }
+
+            if (IsEnabled)
             {
 
             }
