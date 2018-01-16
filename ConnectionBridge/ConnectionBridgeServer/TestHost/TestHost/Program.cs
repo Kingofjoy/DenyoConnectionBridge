@@ -22,28 +22,32 @@ namespace TestHost
 
             Console.WriteLine("Server Started");
 
-            work();
-        
-            
-            BackgroundWorker bwServerAcceptance = new BackgroundWorker();
-            BackgroundWorker bwReceiveData = new BackgroundWorker();
-
-            bwServerAcceptance.WorkerSupportsCancellation = true;
-            bwServerAcceptance.DoWork += BwServerAcceptance_DoWork;
-            //bwServerAcceptance.RunWorkerAsync();
-
-            Console.WriteLine("Accept Hander Initiated");
+            //work();
 
 
-            bwReceiveData.WorkerSupportsCancellation = true;
-            bwReceiveData.DoWork += BwReceiveData_DoWork; ;
-            //bwReceiveData.RunWorkerAsync();
+            //BackgroundWorker bwServerAcceptance = new BackgroundWorker();
+            //BackgroundWorker bwReceiveData = new BackgroundWorker();
 
-            Console.WriteLine("Receive Hander Initiated");
-            
-            
+            //bwServerAcceptance.WorkerSupportsCancellation = true;
+            //bwServerAcceptance.DoWork += BwServerAcceptance_DoWork;
+            ////bwServerAcceptance.RunWorkerAsync();
 
-            while (true) { }
+            //Console.WriteLine("Accept Hander Initiated");
+
+
+            //bwReceiveData.WorkerSupportsCancellation = true;
+            //bwReceiveData.DoWork += BwReceiveData_DoWork; ;
+            ////bwReceiveData.RunWorkerAsync();
+
+            //Console.WriteLine("Receive Hander Initiated");
+
+            while (true)
+            {
+                if (Console.ReadLine() == "CLOSE")
+                    break;
+                else
+                    continue;
+            }
 
 
             Console.WriteLine("End");
@@ -91,7 +95,7 @@ namespace TestHost
 
         private static void BwServerAcceptance_DoWork(object sender, DoWorkEventArgs e)
         {
-            tcpHost.AcceptIncomingConnetion();
+            tcpHost.AcceptIncoming_Connection();
         }
     }
 }
