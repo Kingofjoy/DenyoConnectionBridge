@@ -22,6 +22,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RefDlls", "RefDlls", "{D8BD
 		RefDlls\Newtonsoft.Json.dll = RefDlls\Newtonsoft.Json.dll
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MySqlDBConnection", "MySqlDBConnection\MySqlDBConnection.csproj", "{FBC16FF4-B529-4F6A-AFF7-E0E31FD069A1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -52,6 +54,10 @@ Global
 		{5F18ACD1-18CA-4BF8-9A93-1490750790CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5F18ACD1-18CA-4BF8-9A93-1490750790CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5F18ACD1-18CA-4BF8-9A93-1490750790CA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FBC16FF4-B529-4F6A-AFF7-E0E31FD069A1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FBC16FF4-B529-4F6A-AFF7-E0E31FD069A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FBC16FF4-B529-4F6A-AFF7-E0E31FD069A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FBC16FF4-B529-4F6A-AFF7-E0E31FD069A1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -59,5 +65,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{52D30C45-33C7-40F6-BDAC-4A0F27FCBDE2} = {3B22AA72-704A-4888-BA4C-A144FB3A9E1B}
 		{D32BA6C1-A167-4E95-ADF6-7C631981F167} = {3B22AA72-704A-4888-BA4C-A144FB3A9E1B}
+		{FBC16FF4-B529-4F6A-AFF7-E0E31FD069A1} = {3B22AA72-704A-4888-BA4C-A144FB3A9E1B}
 	EndGlobalSection
 EndGlobal

@@ -26,7 +26,7 @@ namespace Denyo.ConnectionBridge.Client
 
         bool bInitAll;
 
-        public static int cmdCounter;
+        public static int cmdCounter = 0;
         public Main()
         {
             InitializeComponent();
@@ -97,21 +97,22 @@ namespace Denyo.ConnectionBridge.Client
         {
             try
             {
-
+                Logger.Log("SetPortNameValues");
                 SetPortNameValues(cboPort);
                 SetParityValues(cboParity);
                 SetStopBitValues(cboStop);
+                SetDataBitValues(cboData);
                 SetBaudRateValues(cboBaud);
                 lblDevice.Text = Metadata.AppID;
                 lblRemoteServer.Text = Metadata.ServerIP;
                 timer1.Interval = Metadata.TimerInterval;
-                if(bInitAll) timer1.Enabled = true; //TEST
+                if(bInitAll) timer1.Enabled = true;
                 rdoHex.Checked = true;
                 UpdateForm();
             }
             catch (Exception ex)
             {
-
+                Logger.Log("Error while initializing form params. " + ex.Message);
             }
         }
 
@@ -146,7 +147,12 @@ namespace Denyo.ConnectionBridge.Client
             {
                 (obj).Items.Add(str);
             }
-            cboStop.SelectedIndex = 0;
+            cboStop.SelectedIndex = 1;
+        }
+
+        public void SetDataBitValues(ComboBox obj)
+        {
+            cboData.SelectedIndex = 1;
         }
 
         public void SetBaudRateValues(ComboBox obj)
@@ -248,6 +254,8 @@ namespace Denyo.ConnectionBridge.Client
             UpdateForm();
             if (IsInternetConnected && IsServerConnected)
             {
+                if (cmdCounter >= Metadata.InputDictionary.Count)
+                    cmdCounter = 0;
                 serialPortHandler.SendNextCommand(rdoHex.Checked ? Metadata.InputDictionary[cmdCounter].Hexa : Metadata.InputDictionary[cmdCounter].Name, rdoHex.Checked ? CommunicationMode.HEXA : CommunicationMode.TEXT);
             }
             else
@@ -269,6 +277,7 @@ namespace Denyo.ConnectionBridge.Client
                 InitializeFormParams();
 
                 InitializeTcpClientHandler();
+                IsServerConnected = tcpClientHandler.IsServerConnected;
 
                 InitializeSerialPort();
 
@@ -276,19 +285,23 @@ namespace Denyo.ConnectionBridge.Client
             }
             catch(Exception ex)
             {
-
+                Logger.Log("InitAll.Err " + ex.Message);
             }
             bInitAll = true;
         }
 
         private void UpdateForm()
         {
-            IsInternetConnected = CheckForInternetConnection();
-            lblRemoteServer.Text = tcpClientHandler.ServerID;
-            lblInternet.Text = IsInternetConnected ? "Connected" : "Not Connected";
-            lblTimer.Text = timer1.Enabled ? "ON" : "OFF";
-            lblTime.Text = DateTime.Now.ToString();
-            lblHC.Text = Metadata.InputDictionary.Count.ToString();
+            try
+            {
+                IsInternetConnected = CheckForInternetConnection();
+                lblRemoteServer.Text = tcpClientHandler.ServerID;
+                lblInternet.Text = IsInternetConnected ? "Connected" : "Not Connected";
+                lblTimer.Text = timer1.Enabled ? "ON" : "OFF";
+                lblTime.Text = DateTime.Now.ToString();
+                lblHC.Text = Metadata.InputDictionary.Count.ToString();
+            }
+            catch(Exception e) { }
         }
         
         public void SendManualCommand(string cmd)

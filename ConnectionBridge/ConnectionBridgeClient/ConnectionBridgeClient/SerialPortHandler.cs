@@ -33,7 +33,7 @@ namespace Denyo.ConnectionBridge.Client
 
         private Queue<string> ManualCmdQueue;
 
-        private Tuple<string, CommunicationMode, bool> CurrentCmd;
+        private Tuple<string, CommunicationMode, bool, string> CurrentCmd;
 
         public SerialPortHandler(int BaudRate, int DataBits, StopBits StopBits, Parity Parity, string PortName)
         {
@@ -93,10 +93,7 @@ namespace Denyo.ConnectionBridge.Client
                     else
                     {
                         Main.cmdCounter++;
-                        if (Metadata.InputDictionary.Count > Main.cmdCounter)
-                        {
-                            FormRef.timer1.Enabled = false;
-                        }
+                       
                     }
                 }
                 return;
@@ -107,7 +104,7 @@ namespace Denyo.ConnectionBridge.Client
                 {
                     string mCmd = ManualCmdQueue.Dequeue();
                     DataSender(mCmd, CommunicationMode.TEXT);
-                    CurrentCmd = new Tuple<string, CommunicationMode, bool>(mCmd, CommunicationMode.TEXT, true);
+                    CurrentCmd = new Tuple<string, CommunicationMode, bool,string>(mCmd, CommunicationMode.TEXT, true,mCmd);
                 }
                 else
                 {
@@ -115,7 +112,7 @@ namespace Denyo.ConnectionBridge.Client
                     _isManualCmd = IsManulalCmd;
                     _mode = mode;
                     DataSender(cmd, mode);
-                    CurrentCmd = new Tuple<string, CommunicationMode, bool>(cmd, mode, IsManulalCmd);
+                    CurrentCmd = new Tuple<string, CommunicationMode, bool,string>(cmd, mode, IsManulalCmd,Metadata.InputDictionary.FirstOrDefault(x=>x.Hexa==cmd).Name);
                     GotResponseForPrevCmd = false;
                 }
             }
@@ -193,7 +190,7 @@ namespace Denyo.ConnectionBridge.Client
                         }
                 }
                 UpdateLogWindow("Response:" + response + "\n");
-                SaveResponse("[ Request: " +CurrentCmd.Item1 + " ][ Response: " + response + " ]", CurrentCmd.Item3);
+                SaveResponse("[ Request: " +CurrentCmd.Item4+ " ][ Response: " + response + " ]", CurrentCmd.Item3);
             }
             catch(Exception ex)
             {

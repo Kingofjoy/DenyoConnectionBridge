@@ -43,8 +43,14 @@ namespace TestHost
 
             while (true)
             {
-                if (Console.ReadLine() == "CLOSE")
+                string input = Console.ReadLine();
+                if (input == "CLOSE")
                     break;
+                else if (input == "CLEAR")
+                {
+                    Console.Clear();
+                    continue;
+                }
                 else
                     continue;
             }

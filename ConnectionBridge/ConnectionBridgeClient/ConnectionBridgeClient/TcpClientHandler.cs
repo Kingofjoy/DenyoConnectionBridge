@@ -40,6 +40,8 @@ namespace Denyo.ConnectionBridge.Client
 
         public string ServerID = string.Empty;
 
+        public bool IsServerConnected { get; set; }
+
         public TcpClientHandler()
         {
             try
@@ -52,7 +54,7 @@ namespace Denyo.ConnectionBridge.Client
                 RSPort = int.Parse(ConfigurationManager.AppSettings["RSPort"]);
 
                 Client = new TcpClient();
-                InitiateConnection();
+                IsServerConnected = InitiateConnection();
 
                 //Client.Connect(RSName, RSPort);
 
