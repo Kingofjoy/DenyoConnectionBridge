@@ -57,6 +57,10 @@
       <Project>{d32ba6c1-a167-4e95-adf6-7c631981f167}</Project>
       <Name>DataStructures</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\..\MySqlDBConnection\MySqlDBConnection.csproj">
+      <Project>{fbc16ff4-b529-4f6a-aff7-e0e31fd069a1}</Project>
+      <Name>MySqlDBConnection</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

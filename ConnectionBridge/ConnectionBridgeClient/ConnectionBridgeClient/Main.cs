@@ -22,7 +22,7 @@ namespace Denyo.ConnectionBridge.Client
 
         private SerialPortHandler serialPortHandler;
 
-        private TcpClientHandler tcpClientHandler;
+        public TcpClientHandler tcpClientHandler;
 
         bool bInitAll;
 
@@ -311,14 +311,14 @@ namespace Denyo.ConnectionBridge.Client
 
         public void SaveResponse(string response)
         {
-            tcpClientHandler.SendResponseToServer(response);
+            tcpClientHandler.SendMonitoringResponseToServer(response);
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
             try
             {
-                tcpClientHandler.SendResponseToServer(txtSend.Text);
+                tcpClientHandler.SendToServer_Manual(txtSend.Text);
                 txtSend.Clear();
             }
             catch(Exception ex)
@@ -330,7 +330,7 @@ namespace Denyo.ConnectionBridge.Client
 
         private void button2_Click(object sender, EventArgs e)
         {
-            tcpClientHandler.SendResponseToServer(txtSend.Text);
+            tcpClientHandler.SendMonitoringResponseToServer(txtSend.Text);
         }
     }
 }

@@ -67,6 +67,7 @@ namespace Denyo.ConnectionBridge.Server.TCPServer
 
         #endregion
 
+        DBInteractions dbInteraction = null;
 
         public Server()
         {
@@ -86,8 +87,9 @@ namespace Denyo.ConnectionBridge.Server.TCPServer
                 _ListenerPort = int.Parse(ConfigurationManager.AppSettings["SLPort"]);
 
                 NegotiateStageTime = new TimeSpan(0, 0, 0, 1, 200);
-                NegotiateTotalTime = new TimeSpan(0, 0, 10, 1);
+                NegotiateTotalTime = new TimeSpan(0, 0, 1, 0);
 
+                dbInteraction = new DBInteractions();
             }
             catch (Exception ex)
             {
@@ -112,6 +114,8 @@ namespace Denyo.ConnectionBridge.Server.TCPServer
                         if(!bReceiveLoop)
                             new Task(ReceiveMessages).Start();
 
+                        if (!bMessageProcessorLoop && ReceivedMessages.Count > 0)
+                            new Task(ProcessMessages).Start();
                     }
                 }
                 catch (Exception mwp_ex)
@@ -608,12 +612,25 @@ namespace Denyo.ConnectionBridge.Server.TCPServer
                                         DataPacket dpReceived = new DataPacket();
                                         dpReceived = JsonConvert.DeserializeObject<DataPacket>(oneData.Replace("|",""));
                                         ReceivedMessages.Enqueue(dpReceived);
-                                        Log("Client: " + cliobj.Name + " > Data: " + oneData);
+                                        //Log("Client: " + cliobj.Name + " > Data: " + oneData);
+                                        
+                                        //string Input, Output;
+                                        //bool isSaved = true;
+                                        //Input = dpReceived.Message.Substring(dpReceived.Message.IndexOf(":") + 2, (dpReceived.Message.IndexOf("]") - 1) - (dpReceived.Message.IndexOf(":") + 1));
+                                        //Output = dpReceived.Message.Substring(dpReceived.Message.IndexOf(":", dpReceived.Message.IndexOf("]")) + 2, (dpReceived.Message.IndexOf("]", dpReceived.Message.IndexOf("]") + 2) - 1) - (dpReceived.Message.IndexOf(":", dpReceived.Message.IndexOf("]")) + 1)-1);
+                                        //try
+                                        //{
+                                        //    isSaved = dbInteraction.UpdateMonitoringStatus(cliobj.Name,Input,Output,dpReceived.TimeStamp);
+                                        //    Log(cliobj.Name + " > " + Input + " : " + Output + " DB: " + isSaved);
+                                        //}catch(Exception DBex)
+                                        //{
+                                        //    Log("Error while updating response [ " + Input + ","+Output +"] to DB: "+ DBex.Message);
+                                        //}
                                     }
                                     catch (Exception OnePex)
                                     {
                                         Log(OnePex, "One-Parse-Exception");
-                                        Log("Client: " + cliobj.Name + " ; Data: " + oneData);
+                                        Log("Client: " + cliobj.Name + " > Err:True > Data: " + oneData);
                                     }
                                 }
                             }
@@ -638,6 +655,53 @@ namespace Denyo.ConnectionBridge.Server.TCPServer
 
         }
 
+        public void ProcessMessages()
+        {
+            try
+            {
+                bMessageProcessorLoop = true;
+
+                DataPacket dpMsgReceived;
+                while(ReceivedMessages.TryDequeue(out dpMsgReceived))
+                {
+                    switch(dpMsgReceived.Type)
+                    {
+                        case PacketType.MonitoringData:
+                            {
+                                bool isSaved = false;
+
+                                string Input = dpMsgReceived.Message;
+                                string OutputHexa = string.Empty;
+                                string Output = string.Empty;
+                                try
+                                {
+                                     Input = dpMsgReceived.Message.Split(",".ToCharArray())[0];
+                                     OutputHexa = dpMsgReceived.Message.Split(",".ToCharArray())[1];
+                                     Output = DataStructures.Converter.HexaToString(OutputHexa, Input);
+
+                                    isSaved = dbInteraction.UpdateMonitoringStatus(dpMsgReceived.SenderID, Input, Output,OutputHexa, dpMsgReceived.TimeStamp);
+
+                                    Log(dpMsgReceived.SenderID + " > " + Input + " : " + OutputHexa + " : "+ Output + " DB: " + isSaved);
+
+                                    //if (!isSaved)
+                                    //    Log(dpMsgReceived.SenderID + " > " + dpMsgReceived.Message.Split(",".ToCharArray())[0] + " : " + dpMsgReceived.Message.Split(",".ToCharArray())[1] + " DB: " + isSaved);
+                                }
+                                catch (Exception DBex)
+                                {
+                                    Log("ProcessMessages: Error saving MonitoringData [ " + Input + "," + Output + "," +OutputHexa + "] to DB: "+ isSaved + " Err: " + DBex.Message);
+                                }
+                            }
+                            break;
+                    }
+                }
+
+                bMessageProcessorLoop = false;
+            }
+            catch(Exception Pex)
+            {
+                Log("ProcessMessages Err." + Pex);
+            }
+        }
         public bool SendMessage(DataPacket dpToSend)
         {
             bool iSMsgSent = false;

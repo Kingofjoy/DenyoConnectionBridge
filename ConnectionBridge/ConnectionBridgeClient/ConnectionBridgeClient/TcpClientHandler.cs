@@ -91,7 +91,7 @@ namespace Denyo.ConnectionBridge.Client
                 TimeSpan NegotiateStageTime, NegotiateTotalTime;
 
                 NegotiateStageTime = new TimeSpan(0, 0, 0, 1, 200);
-                NegotiateTotalTime = new TimeSpan(0, 0, 10, 1);
+                NegotiateTotalTime = new TimeSpan(0, 0, 1, 0);
 
                 DateTime dtTimeNegEndTime = DateTime.Now + NegotiateTotalTime;
                 int PresentStageId = 0; 
@@ -446,7 +446,7 @@ namespace Denyo.ConnectionBridge.Client
             }
         }
 
-        public void SendResponseToServer(string response)
+        public void SendMonitoringResponseToServer(string response)
         {
             try
             {
@@ -458,6 +458,8 @@ namespace Denyo.ConnectionBridge.Client
                 deviceResponse.RecepientID = ServerID;
                 deviceResponse.RecepientType = AppType.Server;
 
+                deviceResponse.Type = PacketType.MonitoringData;
+
                 deviceResponse.Message = response;
                 deviceResponse.TimeStamp = DateTime.Now;
 
@@ -465,7 +467,33 @@ namespace Denyo.ConnectionBridge.Client
             }
             catch(Exception ex)
             {
-                Logger.Log("Unable to SendResponseToServer " + ex.Message);
+                Logger.Log("Unable to SendMonitoringResponseToServer " + ex.Message);
+            }
+
+        }
+
+        public void SendToServer_Manual(string strData)
+        {
+            try
+            {
+                DataPacket deviceResponse = new DataPacket();
+
+                deviceResponse.SenderID = AppID;
+                deviceResponse.SenderType = this.Type;
+
+                deviceResponse.RecepientID = ServerID;
+                deviceResponse.RecepientType = AppType.Server;
+
+                deviceResponse.Type = PacketType.Request;
+
+                deviceResponse.Message = strData;
+                deviceResponse.TimeStamp = DateTime.Now;
+
+                SendDataToServer(deviceResponse);
+            }
+            catch (Exception ex)
+            {
+                Logger.Log("Unable to SendMonitoringResponseToServer " + ex.Message);
             }
 
         }

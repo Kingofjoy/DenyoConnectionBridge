@@ -48,6 +48,12 @@ namespace Denyo.ConnectionBridge.DataStructures
     }
 
     [Serializable]
+    public enum PacketType
+    {
+        Request, Response, MonitoringData, Acknowledge
+    }
+
+    [Serializable]
     public class DataPacket
     {
         public AppType SenderType { get; set; }
@@ -58,6 +64,8 @@ namespace Denyo.ConnectionBridge.DataStructures
 
         public string RecepientID { get; set; }
 
+        public PacketType Type { get; set; }
+
         public DateTime TimeStamp { get; set; }
 
         public string MsgID { get; set; }
@@ -65,5 +73,7 @@ namespace Denyo.ConnectionBridge.DataStructures
         public string Message { get; set; }
 
         public bool IsManualCmd { get; set; }
+
+        public string RefMsgId { get; set; }
     }
 }

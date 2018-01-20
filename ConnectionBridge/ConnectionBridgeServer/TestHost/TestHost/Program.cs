@@ -15,6 +15,11 @@ namespace TestHost
 
         static void Main(string[] args)
         {
+            //Console.WriteLine("Test");
+            //Console.WriteLine("01 03 02 00 00 B8 44 , LOADPOWER1");
+            //Console.WriteLine(Denyo.ConnectionBridge.DataStructures.Converter.HexaToString("01 03 02 00 00 B8 44", "LOADPOWER1"));
+
+            //Console.ReadLine();
             Console.WriteLine("Init");
 
             tcpHost = new Server();

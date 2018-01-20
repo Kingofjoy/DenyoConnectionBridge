@@ -12,7 +12,7 @@ using System.Configuration;
 
 namespace Denyo.ConnectionBridge.MySqlDBConnection
 {
-    class DatabaseManager
+    public class DatabaseManager
     {
         private MySqlConnection connection;
 
@@ -95,7 +95,7 @@ namespace Denyo.ConnectionBridge.MySqlDBConnection
             }
             catch(Exception ex)
             {
-
+                throw;
             }
             finally
             {

@@ -87,7 +87,7 @@ namespace Denyo.ConnectionBridge.Client
                     Logger.Log("Command Timed Out for the command:" + CurrentCmd.Item1, new Exception("TimedOut Exception"));
                     if (ManualCmdQueue.Count > 0 && CurrentCmd.Item3)
                     {
-                        SaveResponse(cmd + "," + "Command Timed Out, No response from the devicce", CurrentCmd.Item3);
+                        SaveResponse(cmd + "," + "Command Timed Out, No response from the device", CurrentCmd.Item3);
                         SendNextCommand(ManualCmdQueue.Dequeue(), CommunicationMode.TEXT, true);
                     }
                     else
@@ -189,8 +189,8 @@ namespace Denyo.ConnectionBridge.Client
                             break;
                         }
                 }
-                UpdateLogWindow("Response:" + response + "\n");
-                SaveResponse("[ Request: " +CurrentCmd.Item4+ " ][ Response: " + response + " ]", CurrentCmd.Item3);
+                UpdateLogWindow("[ Request: " + CurrentCmd.Item4 + " ][ Response: " + response + " ]");
+                SaveResponse(CurrentCmd.Item4+","+response,CurrentCmd.Item3);
             }
             catch(Exception ex)
             {
@@ -210,6 +210,7 @@ namespace Denyo.ConnectionBridge.Client
                 if (init)
                     FormRef.rtbDisplay.Clear();
                 FormRef.rtbDisplay.AppendText(log);
+                FormRef.rtbDisplay.AppendText(Environment.NewLine);
             }
             catch(Exception ex)
             {
