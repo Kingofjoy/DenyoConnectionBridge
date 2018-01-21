@@ -24,6 +24,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RefDlls", "RefDlls", "{D8BD
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MySqlDBConnection", "MySqlDBConnection\MySqlDBConnection.csproj", "{FBC16FF4-B529-4F6A-AFF7-E0E31FD069A1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebServer", "ConnectionBridgeServer\WebServer\WebServer\WebServer.csproj", "{1AE5024D-CD75-4B85-A03E-C418C10DDA9C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -58,6 +60,10 @@ Global
 		{FBC16FF4-B529-4F6A-AFF7-E0E31FD069A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FBC16FF4-B529-4F6A-AFF7-E0E31FD069A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FBC16FF4-B529-4F6A-AFF7-E0E31FD069A1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1AE5024D-CD75-4B85-A03E-C418C10DDA9C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1AE5024D-CD75-4B85-A03E-C418C10DDA9C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1AE5024D-CD75-4B85-A03E-C418C10DDA9C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1AE5024D-CD75-4B85-A03E-C418C10DDA9C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

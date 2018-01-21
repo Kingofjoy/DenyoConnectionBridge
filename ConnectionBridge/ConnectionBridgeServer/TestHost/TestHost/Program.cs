@@ -7,12 +7,17 @@ using System.Threading.Tasks;
 using Denyo.ConnectionBridge.Server.TCPServer;
 using System.ComponentModel;
 
+using Denyo.ConnectionBridge.Server.WebServer;
+using System.Collections.Concurrent;
+using Denyo.ConnectionBridge.DataStructures;
+
 namespace TestHost
 {
     class Program
     {
-        static Server tcpHost = null;
-
+        static Denyo.ConnectionBridge.Server.TCPServer.Server tcpHost = null;
+        static Denyo.ConnectionBridge.Server.WebServer.Server webHost = null;
+        
         static void Main(string[] args)
         {
             //Console.WriteLine("Test");
@@ -22,8 +27,19 @@ namespace TestHost
             //Console.ReadLine();
             Console.WriteLine("Init");
 
-            tcpHost = new Server();
+            ConcurrentQueue<DataPacket> ReceivedMessages = new ConcurrentQueue<DataPacket>();
+            ConcurrentQueue<DataPacket> PostMessages = new ConcurrentQueue<DataPacket>();
+
+
+            //webHost = new DenyoCBWebAPI();
+
+            tcpHost = new Denyo.ConnectionBridge.Server.TCPServer.Server(ref ReceivedMessages, ref PostMessages);
             tcpHost.Start();
+            
+
+            webHost = new Denyo.ConnectionBridge.Server.WebServer.Server(ref ReceivedMessages, ref PostMessages);
+            webHost.Start();
+
 
             Console.WriteLine("Server Started");
 

@@ -24,8 +24,16 @@ namespace Denyo.ConnectionBridge.Server.TCPServer
 
         ConcurrentQueue<Client> StagingClients = new ConcurrentQueue<Client>();
 
-        ConcurrentQueue<DataPacket> ReceivedMessages = new ConcurrentQueue<DataPacket>();
-        ConcurrentQueue<DataPacket> PostMessages = new ConcurrentQueue<DataPacket>();
+        ConcurrentQueue<DataPacket> ReceivedMessages
+        {
+            get; set;
+        } 
+
+        ConcurrentQueue<DataPacket> PostMessages
+        {
+            get; set;
+        }
+         
 
 
         DateTime dtNext;
@@ -69,7 +77,22 @@ namespace Denyo.ConnectionBridge.Server.TCPServer
 
         DBInteractions dbInteraction = null;
 
+        public Server(ref ConcurrentQueue<DataPacket> ReceivedMessagesQRef,ref ConcurrentQueue<DataPacket> PostMessagesQRef)
+        {
+            InitTCPServer();
+
+            ReceivedMessages = ReceivedMessagesQRef;
+            PostMessages = PostMessagesQRef;
+        }
         public Server()
+        {
+            InitTCPServer();
+
+            ReceivedMessages = new ConcurrentQueue<DataPacket>();
+            PostMessages = new ConcurrentQueue<DataPacket>();
+        }
+
+        private void InitTCPServer()
         {
             try
             {
@@ -655,6 +678,19 @@ namespace Denyo.ConnectionBridge.Server.TCPServer
 
         }
 
+        public bool AddMessageToProcessing(DataPacket dpMessage)
+        {
+            try
+            {
+                ReceivedMessages.Enqueue(dpMessage);
+                return true;
+            }
+            catch(Exception ex)
+            {
+                Log("Unable to add DP to Q. [ " + dpMessage.SenderID +"-" +dpMessage.Message  + "-"+ dpMessage.RecepientID + "]");
+                return false;
+            }
+        }
         public void ProcessMessages()
         {
             try
