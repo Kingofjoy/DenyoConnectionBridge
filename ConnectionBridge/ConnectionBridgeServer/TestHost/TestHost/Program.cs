@@ -27,17 +27,22 @@ namespace TestHost
             //Console.ReadLine();
             Console.WriteLine("Init");
 
+            ConcurrentDictionary<string, ConcurrentQueue<DataPacket>> MessageQueues = new ConcurrentDictionary<string, ConcurrentQueue<DataPacket>>();
+            MessageQueues.AddOrUpdate("ReceivedMessages", new ConcurrentQueue<DataPacket>(),(k,x)=> { return new ConcurrentQueue<DataPacket>(); });
+            MessageQueues.AddOrUpdate("PostMessages", new ConcurrentQueue<DataPacket>(), (k, x) => { return new ConcurrentQueue<DataPacket>(); });
+            MessageQueues.AddOrUpdate("ProcessedMessages", new ConcurrentQueue<DataPacket>(), (k, x) => { return new ConcurrentQueue<DataPacket>(); });
+
             ConcurrentQueue<DataPacket> ReceivedMessages = new ConcurrentQueue<DataPacket>();
             ConcurrentQueue<DataPacket> PostMessages = new ConcurrentQueue<DataPacket>();
 
-
+             
             //webHost = new DenyoCBWebAPI();
 
-            tcpHost = new Denyo.ConnectionBridge.Server.TCPServer.Server(ref ReceivedMessages, ref PostMessages);
+            tcpHost = new Denyo.ConnectionBridge.Server.TCPServer.Server(ref MessageQueues);
             tcpHost.Start();
             
 
-            webHost = new Denyo.ConnectionBridge.Server.WebServer.Server(ref ReceivedMessages, ref PostMessages);
+            webHost = new Denyo.ConnectionBridge.Server.WebServer.Server(ref MessageQueues);
             webHost.Start();
 
 

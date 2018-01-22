@@ -33,7 +33,12 @@ namespace Denyo.ConnectionBridge.Server.TCPServer
         {
             get; set;
         }
-         
+
+        ConcurrentQueue<DataPacket> ProcessedMessages
+        {
+            get; set;
+        }
+
 
 
         DateTime dtNext;
@@ -77,12 +82,13 @@ namespace Denyo.ConnectionBridge.Server.TCPServer
 
         DBInteractions dbInteraction = null;
 
-        public Server(ref ConcurrentQueue<DataPacket> ReceivedMessagesQRef,ref ConcurrentQueue<DataPacket> PostMessagesQRef)
+        public Server(ref ConcurrentDictionary<string, ConcurrentQueue<DataPacket>> MessageQueuesRef)
         {
             InitTCPServer();
 
-            ReceivedMessages = ReceivedMessagesQRef;
-            PostMessages = PostMessagesQRef;
+            ReceivedMessages = MessageQueuesRef["ReceivedMessages"];
+            PostMessages = MessageQueuesRef["PostMessages"];
+            ProcessedMessages = MessageQueuesRef["ProcessedMessages"];
         }
         public Server()
         {
@@ -90,6 +96,7 @@ namespace Denyo.ConnectionBridge.Server.TCPServer
 
             ReceivedMessages = new ConcurrentQueue<DataPacket>();
             PostMessages = new ConcurrentQueue<DataPacket>();
+            ProcessedMessages = new ConcurrentQueue<DataPacket>();
         }
 
         private void InitTCPServer()
@@ -728,6 +735,26 @@ namespace Denyo.ConnectionBridge.Server.TCPServer
                                 }
                             }
                             break;
+                        case PacketType.Request:
+                        case PacketType.Response:
+                            {
+                                Log("Transaction: From:" + dpMsgReceived.SenderID + " To:" + dpMsgReceived.RecepientID);
+                                if(Clients.Count(x=>x.Key==dpMsgReceived.RecepientID)>0)
+                                {
+                                    //PostMessages.Enqueue(dpMsgReceived);
+                                    if (SendMessage(dpMsgReceived))
+                                        Log("Sent");
+                                    else
+                                        Log("Send Failed");
+                                }
+                                else
+                                {
+                                    Log("Client Not found. Message not sent");
+                                    ProcessedMessages.Enqueue(dpMsgReceived);
+                                }
+                            }
+                            break;
+                            
                     }
                 }
 
@@ -744,20 +771,30 @@ namespace Denyo.ConnectionBridge.Server.TCPServer
 
             try
             {
-                Client TargetClient;
-                Clients.TryGetValue(dpToSend.RecepientID, out TargetClient);
-                if(TargetClient.Instance.Connected)
+                Log("Sending Message to "+dpToSend.RecepientID);
+                Client TargetClient = Clients[dpToSend.RecepientID];
+                //Clients.TryGetValue(dpToSend.RecepientID, out TargetClient);
+                if (TargetClient.Instance.Connected)
                 {
                     if ((TargetClient.Instance.Available > 0))
-                        for (int j = 0; j <= 990000000; j++) { /* give a small delay */ }
+                        for (int j = 0; j <= 999000000; j++) { /* give a small delay */ }
 
                     Byte[] sendBytes = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(dpToSend));
                     TargetClient.Stream.Write(sendBytes, 0, sendBytes.Length);
                     TargetClient.Stream.Flush();
+                    iSMsgSent = true;
+                    Log("Message sent successfully");
                 }
+                else
+                {
+                    Log("Target Client on available " + TargetClient.Name);
+                    iSMsgSent = false;
+                }
+                
             }
             catch(Exception ex)
             {
+                Log("Message sending failed");
                 Log(ex, "Error on SendMessage");
             }
 

@@ -25,16 +25,20 @@ namespace Denyo.ConnectionBridge.Server.WebServer
         {
             get; set;
         }
+        ConcurrentQueue<DataPacket> ProcessedMessages
+        {
+            get; set;
+        }
 
-        
         //static DenyoCBWebAPI()
         //{
-                
+
         //}
-        public DenyoCBWebAPI(ref ConcurrentQueue<DataPacket>  ReceiveMessageQRef,ref ConcurrentQueue<DataPacket>  PostMessageQRef)
+        public DenyoCBWebAPI(ref ConcurrentDictionary<string, ConcurrentQueue<DataPacket>> MessageQueuesRef)
         {
-            ReceivedMessages = ReceiveMessageQRef;
-            PostMessages = PostMessageQRef;
+            ReceivedMessages = MessageQueuesRef["ReceivedMessages"];
+            PostMessages = MessageQueuesRef["PostMessages"];
+            ProcessedMessages = MessageQueuesRef["ProcessedMessages"];
         }
         public DenyoCBWebAPI()
         {
@@ -65,13 +69,13 @@ namespace Denyo.ConnectionBridge.Server.WebServer
             try
             {
                 dpInputPacket = JsonConvert.DeserializeObject<DataPacket>(dpInputString);
-                dpInputPacket.Message = "Processed Message";
-                dpInputPacket.TimeStamp = DateTime.Now;
-                string strSenderName = dpInputPacket.RecepientID;
-                string strReceiverName = dpInputPacket.SenderID;
+                dpInputPacket.Message = "ACK. " + dpInputPacket.Message;
+                //dpInputPacket.TimeStamp = DateTime.Now;
+                //string strSenderName = dpInputPacket.RecepientID;
+                //string strReceiverName = dpInputPacket.SenderID;
 
-                dpInputPacket.SenderID = strSenderName;
-                dpInputPacket.RecepientID = strReceiverName;
+                //dpInputPacket.SenderID = strSenderName;
+                //dpInputPacket.RecepientID = strReceiverName;
 
                 ReceivedMessages.Enqueue(dpInputPacket);
             }

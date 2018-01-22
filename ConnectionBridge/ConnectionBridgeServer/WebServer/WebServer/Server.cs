@@ -21,9 +21,9 @@ namespace Denyo.ConnectionBridge.Server.WebServer
             webserverAPI  = new DenyoCBWebAPI();
         }
 
-        public Server(ref ConcurrentQueue<DataPacket> ReceivedMessagesQRef,ref ConcurrentQueue<DataPacket> PostMessagesQRef)
+        public Server(ref ConcurrentDictionary<string, ConcurrentQueue<DataPacket>> MessageQueuesRef)
         {
-            webserverAPI = new DenyoCBWebAPI(ref ReceivedMessagesQRef, ref PostMessagesQRef);
+            webserverAPI = new DenyoCBWebAPI(ref MessageQueuesRef);
         }
 
         public bool Start()
