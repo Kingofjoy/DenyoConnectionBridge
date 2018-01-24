@@ -8,6 +8,7 @@ using System.Text;
 using Denyo.ConnectionBridge.DataStructures;
 using Newtonsoft.Json;
 using System.Collections.Concurrent;
+using System.Threading;
 
 namespace Denyo.ConnectionBridge.Server.WebServer
 {
@@ -69,15 +70,21 @@ namespace Denyo.ConnectionBridge.Server.WebServer
             try
             {
                 dpInputPacket = JsonConvert.DeserializeObject<DataPacket>(dpInputString);
-                dpInputPacket.Message = "ACK. " + dpInputPacket.Message;
+                //dpInputPacket.Message = "ACK. " + dpInputPacket.Message;
                 //dpInputPacket.TimeStamp = DateTime.Now;
                 //string strSenderName = dpInputPacket.RecepientID;
                 //string strReceiverName = dpInputPacket.SenderID;
 
                 //dpInputPacket.SenderID = strSenderName;
                 //dpInputPacket.RecepientID = strReceiverName;
-
+                Console.WriteLine("Enqueue web St. " + DateTime.Now.ToString("YYYYMMDD HH:mm:ss:fff") + " Msg: " + ReceivedMessages.Count + " TID: "+ Thread.CurrentThread.ManagedThreadId);
                 ReceivedMessages.Enqueue(dpInputPacket);
+                Console.WriteLine("Enqueue web St. " + DateTime.Now.ToString("YYYYMMDD HH:mm:ss:fff") + " Msg: " + ReceivedMessages.Count + " TID: " + Thread.CurrentThread.ManagedThreadId);
+                DataPacket Ack = new DataPacket();
+                Ack = JsonConvert.DeserializeObject<DataPacket>(dpInputString);
+                Ack.Message = "ACK." + Ack.Message;
+                return JsonConvert.SerializeObject(Ack);
+
             }
             catch(Exception ex)
             {

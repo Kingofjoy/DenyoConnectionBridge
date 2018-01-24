@@ -25,8 +25,16 @@ namespace Denyo.ConnectionBridge.Server.WebServer
         string Transact(string dpInput);
 
         // Sample
-        // http://13.58.37.241/DenyoCBWebAPI/Transact/Data=%7B%22SenderType%22:1,%22SenderID%22:%22VINCENT%22,%22RecepientType%22:0,%22RecepientID%22:%22MINIPC001%22,%22TimeStamp%22:%222018-01-18T23:47:23.3797551+08:00%22,%22MsgID%22:%2232%22,%22Message%22:%22TEST%20STRING4%22,%22IsManualCmd%22:false%7D
+        /*
 
+        Auto:
+        http://XX.XX.XX.XXX/DenyoCBWebAPI/Transact/Data={"SenderType":2,"SenderID":"APPTST1","RecepientType":1,"RecepientID":"GEN0002","TimeStamp":"2018-01-24T23:47:23.3797551+08:00","MsgID":"32","Message":"01 06 0b cb 00 02 7b d1","IsManualCmd":true}
+        Off:
+        http://XX.XX.XX.XXX/DenyoCBWebAPI/Transact/Data={"SenderType":2,"SenderID":"APPTST1","RecepientType":1,"RecepientID":"GEN0002","TimeStamp":"2018-01-24T23:47:23.3797551+08:00","MsgID":"32","Message":"01 06 0b cb 00 00 fa 10","IsManualCmd":true}
+        Manual:
+        http://XX.XX.XX.XXX/DenyoCBWebAPI/Transact/Data={"SenderType":2,"SenderID":"APPTST1","RecepientType":1,"RecepientID":"GEN0002","TimeStamp":"2018-01-24T23:47:23.3797551+08:00","MsgID":"32","Message":"01 06 0b cb 00 01 3b d0","IsManualCmd":true}
+
+        */
 
     }
 }

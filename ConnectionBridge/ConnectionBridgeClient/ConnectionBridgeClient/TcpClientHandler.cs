@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 
 using Denyo.ConnectionBridge.DataStructures;
 using Newtonsoft.Json;
+using System.Threading;
 
 namespace Denyo.ConnectionBridge.Client
 {
@@ -40,7 +41,7 @@ namespace Denyo.ConnectionBridge.Client
 
         public string ServerID = string.Empty;
 
-        public bool IsServerConnected { get; set; }
+        //public bool IsServerConnected { get; set; }
 
         public TcpClientHandler()
         {
@@ -54,13 +55,13 @@ namespace Denyo.ConnectionBridge.Client
                 RSPort = int.Parse(ConfigurationManager.AppSettings["RSPort"]);
 
                 Client = new TcpClient();
-                IsServerConnected = InitiateConnection();
+                Main.IsServerConnected = InitiateConnection();
 
                 //Client.Connect(RSName, RSPort);
 
-                //bwReceiver.WorkerSupportsCancellation = true;
-                //bwReceiver.DoWork += BwReceiver_DoWork;
-                //bwReceiver.RunWorkerAsync();
+                bwReceiver.WorkerSupportsCancellation = true;
+                bwReceiver.DoWork += BwReceiver_DoWork;
+                bwReceiver.RunWorkerAsync();
             }
             catch (Exception ex)
             {
@@ -395,7 +396,55 @@ namespace Denyo.ConnectionBridge.Client
             }
         }
 
+        public bool ServerDataAvailable
+        {
+            get
+            {
+                return (Client != null && Client.Connected && ServerStream != null && ServerStream.DataAvailable);
+            }
+            
+        }
 
+        public List<DataPacket> ReceiveMessage()
+        {
+            List<DataPacket> dpsReceived = new List<DataPacket>();
+            try
+            {
+                if (Client.Connected && ServerStream.DataAvailable)
+                {
+                    byte[] inStream = new byte[Client.ReceiveBufferSize];
+
+                    int recb = ServerStream.Read(inStream, 0, Client.ReceiveBufferSize);
+                    if (recb == 0) return null;
+
+                    string returndata = System.Text.Encoding.ASCII.GetString(inStream);
+                    returndata= returndata.Replace("\0", "");
+                    if (returndata.Length > 0)
+                    {
+                        foreach (string oneData in returndata.Split("|".ToCharArray()))
+                        {
+                            try
+                            {
+                                if(!string.IsNullOrEmpty(oneData) && oneData != "|" && oneData != " ")
+                                {
+                                    dpsReceived.Add(JsonConvert.DeserializeObject<DataPacket>(oneData));
+                                }
+                            }
+                            catch (Exception OneParseEx)
+                            {
+                                Logger.Log("OneParseEx ", OneParseEx);
+                            }
+                        }
+                             
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Log("Error while receiving. " + ex.Message);
+            }
+            return dpsReceived;
+        }
         private void BwReceiver_DoWork(object sender, DoWorkEventArgs e)
         {
             try
@@ -406,29 +455,35 @@ namespace Denyo.ConnectionBridge.Client
                     {
                         if (!ServerStream.DataAvailable) continue;
 
-                        byte[] inStream = new byte[Client.ReceiveBufferSize];
+                        //byte[] inStream = new byte[Client.ReceiveBufferSize];
 
-                        int recb = ServerStream.Read(inStream, 0, Client.ReceiveBufferSize);
-                        if (recb == 0) return;
+                        //int recb = ServerStream.Read(inStream, 0, Client.ReceiveBufferSize);
+                        //if (recb == 0) return;
 
-                        string returndata = System.Text.Encoding.ASCII.GetString(inStream);
+                        //string returndata = System.Text.Encoding.ASCII.GetString(inStream);
 
-                        if (returndata.Length == 0)
-                        {
-                            continue;
-                        }
+                        //if (returndata.Length == 0)
+                        //{
+                        //    continue;
+                        //}
 
-                        cmd = new DataPacket();
                         //cmd = JsonConvert.DeserializeObject<DataPacket>(returndata);
 
-                        if (cmd.SenderID != string.Empty)
+                        List<DataPacket> cmds = ReceiveMessage();
+                        foreach (DataPacket cmd in cmds)
                         {
-                            if(Metadata.InputDictionary.Where(_ => _.Name.Equals(cmd.Message)).Count() == 0 )
+                            if (cmd.SenderID != string.Empty)
                             {
-                                // send invalid cmd response to server
-                                continue;
+
+                                if (Metadata.InputDictionary.Where(_ => _.Name.Equals(cmd.Message)).Count() == 0)
+                                {
+                                    // send invalid cmd response to server
+                                    FormRef.SendManualCommand(cmd.Message);
+                                }
+                                else
+
+                                FormRef.SendManualCommand(Metadata.InputDictionary.FirstOrDefault(x=>x.Name==cmd.Message).Hexa);
                             }
-                            FormRef.SendManualCommand(cmd.Message);
                         }
 
                     }
@@ -436,6 +491,11 @@ namespace Denyo.ConnectionBridge.Client
                     {
                         Logger.Log("Error while receiving. " + ex.Message);
                     }
+                }
+                if(!Client.Connected)
+                {
+                    FormRef.bInitAll = false;
+                    Main.IsServerConnected = InitiateConnection();
                 }
 
                 Logger.Log("Server connection lost!");

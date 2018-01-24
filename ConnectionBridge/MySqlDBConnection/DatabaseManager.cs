@@ -14,7 +14,9 @@ namespace Denyo.ConnectionBridge.MySqlDBConnection
 {
     public class DatabaseManager
     {
-        private MySqlConnection connection;
+        private MySqlConnection Testconnection;
+
+        string ConnectionString;
 
         //Constructor
         public DatabaseManager()
@@ -26,10 +28,10 @@ namespace Denyo.ConnectionBridge.MySqlDBConnection
         private void Initialize()
         {
 
-            string connectionString=string.Empty;
             //connectionString = "SERVER=" + server + ";" + "DATABASE=" + database + ";" + "UID=" + uid + ";" + "PASSWORD=" + password + ";";
-            connectionString = ConfigurationManager.AppSettings["ConnectionString"].ToString();
-            connection = new MySqlConnection(connectionString);
+            ConnectionString = ConfigurationManager.AppSettings["ConnectionString"].ToString();
+            Testconnection = new MySqlConnection(ConnectionString);
+            Testconnection.Open();
         }
 
 
@@ -38,7 +40,7 @@ namespace Denyo.ConnectionBridge.MySqlDBConnection
         {
             try
             {
-                connection.Open();
+                Testconnection.Open();
                 return true;
             }
             catch (MySqlException ex)
@@ -66,7 +68,7 @@ namespace Denyo.ConnectionBridge.MySqlDBConnection
         {
             try
             {
-                connection.Close();
+                Testconnection.Close();
                 return true;
             }
             catch (MySqlException ex)
@@ -80,10 +82,12 @@ namespace Denyo.ConnectionBridge.MySqlDBConnection
         public int ExecuteNonQuery(string query)
         {
             int iAffectedRows = -1;
+            MySqlConnection connection=null;
             try
             {
-                //open connection
-                if (this.OpenConnection() == true)
+                connection = new MySqlConnection(ConnectionString);
+                connection.Open();
+                if (connection.State == ConnectionState.Open)
                 {
                     //create command and assign the query and connection from the constructor
                     MySqlCommand cmd = new MySqlCommand(query, connection);
@@ -95,12 +99,13 @@ namespace Denyo.ConnectionBridge.MySqlDBConnection
             }
             catch(Exception ex)
             {
+                Console.WriteLine("DBX "+ ex.Message);
                 throw;
             }
             finally
             {
-                if(this.connection !=null && this.connection.State != System.Data.ConnectionState.Closed)
-                    this.CloseConnection();
+                if (connection != null && connection.State != System.Data.ConnectionState.Closed)
+                    connection.Close();
             }
             return iAffectedRows;
         }
@@ -109,9 +114,11 @@ namespace Denyo.ConnectionBridge.MySqlDBConnection
         public DataSet ExecuteDataSet(string query)
         {
             DataSet dsData = new DataSet();
+            MySqlConnection connection = new MySqlConnection(ConnectionString);
             try
             {
-                if (this.OpenConnection())
+                connection.Open();
+                if (connection.State == ConnectionState.Open)
                 {
                     MySqlDataAdapter sqlDA = new MySqlDataAdapter(query, connection);
                     MySqlCommandBuilder cmdbd = new MySqlCommandBuilder(sqlDA);
@@ -121,12 +128,12 @@ namespace Denyo.ConnectionBridge.MySqlDBConnection
             }
             catch(Exception ex)
             {
-
+                throw;
             }
             finally
             {
-                if (this.connection != null && this.connection.State != System.Data.ConnectionState.Closed)
-                    this.CloseConnection();
+                if (connection != null && connection.State != System.Data.ConnectionState.Closed)
+                    connection.Close();
             }
             return dsData;
         }
@@ -136,20 +143,18 @@ namespace Denyo.ConnectionBridge.MySqlDBConnection
         {
             int Count = -1;
 
+            MySqlConnection connection = new MySqlConnection(ConnectionString);
             try
             {
+                connection.Open();
                 //Open Connection
-                if (this.OpenConnection() == true)
+                if (connection.State == ConnectionState.Open)
                 {
                     //Create Mysql Command
                     MySqlCommand cmd = new MySqlCommand(query, connection);
 
                     //ExecuteScalar will return one value
                     Count = int.Parse(cmd.ExecuteScalar().ToString());
-
-                    //close Connection
-                    this.CloseConnection();
-
                 }
             }
             catch(Exception ex)
@@ -158,8 +163,8 @@ namespace Denyo.ConnectionBridge.MySqlDBConnection
             }
             finally
             {
-                if (this.connection != null && this.connection.State != System.Data.ConnectionState.Closed)
-                    this.CloseConnection();
+                if (connection != null && connection.State != System.Data.ConnectionState.Closed)
+                    connection.Close();
             }
             return Count;
         }

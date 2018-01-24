@@ -88,7 +88,7 @@ namespace Denyo.ConnectionBridge.Client
                     if (ManualCmdQueue.Count > 0 && CurrentCmd.Item3)
                     {
                         SaveResponse(cmd + "," + "Command Timed Out, No response from the device", CurrentCmd.Item3);
-                        SendNextCommand(ManualCmdQueue.Dequeue(), CommunicationMode.TEXT, true);
+                        SendNextCommand(ManualCmdQueue.Dequeue(), CommunicationMode.HEXA, true);
                     }
                     else
                     {
@@ -103,12 +103,14 @@ namespace Denyo.ConnectionBridge.Client
                 if (ManualCmdQueue.Count > 0)
                 {
                     string mCmd = ManualCmdQueue.Dequeue();
-                    DataSender(mCmd, CommunicationMode.TEXT);
-                    CurrentCmd = new Tuple<string, CommunicationMode, bool,string>(mCmd, CommunicationMode.TEXT, true,mCmd);
+                    UpdateLogWindow("Received Manual CMD:"+ mCmd +"    *****");
+                    DataSender(mCmd, CommunicationMode.HEXA);
+                    CurrentCmd = new Tuple<string, CommunicationMode, bool,string>(mCmd, CommunicationMode.HEXA, true,"Manual:"+
+                                                   ((Metadata.InputDictionary.Count(x => x.Hexa == mCmd)>0) ? Metadata.InputDictionary.FirstOrDefault(x => x.Hexa == mCmd).Name : mCmd));
                 }
                 else
                 {
-                    UpdateLogWindow("inside next cmd:\n");
+                    UpdateLogWindow("Auto cmd:\n");
                     _isManualCmd = IsManulalCmd;
                     _mode = mode;
                     DataSender(cmd, mode);
@@ -120,7 +122,8 @@ namespace Denyo.ConnectionBridge.Client
 
         public void SendManualCommand(string cmd)
         {
-            SendNextCommand(cmd, CommunicationMode.TEXT, true);
+            ManualCmdQueue.Enqueue(cmd);
+            //SendNextCommand(cmd, CommunicationMode.TEXT, true);
         }
 
         private void DataSender(string cmd, CommunicationMode mode)

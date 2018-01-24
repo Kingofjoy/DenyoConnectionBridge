@@ -24,7 +24,7 @@ namespace Denyo.ConnectionBridge.Client
 
         public TcpClientHandler tcpClientHandler;
 
-        bool bInitAll;
+        public bool bInitAll;
 
         public static int cmdCounter = 0;
         public Main()
@@ -277,7 +277,6 @@ namespace Denyo.ConnectionBridge.Client
                 InitializeFormParams();
 
                 InitializeTcpClientHandler();
-                IsServerConnected = tcpClientHandler.IsServerConnected;
 
                 InitializeSerialPort();
 
@@ -295,7 +294,7 @@ namespace Denyo.ConnectionBridge.Client
             try
             {
                 IsInternetConnected = CheckForInternetConnection();
-                lblRemoteServer.Text = tcpClientHandler.ServerID;
+                lblRemoteServer.Text = tcpClientHandler.ServerID + ((IsServerConnected) ? "(Connected)" : "(Not Connected)");
                 lblInternet.Text = IsInternetConnected ? "Connected" : "Not Connected";
                 lblTimer.Text = timer1.Enabled ? "ON" : "OFF";
                 lblTime.Text = DateTime.Now.ToString();

@@ -12,6 +12,7 @@ using Denyo.ConnectionBridge.DataStructures;
 using Newtonsoft.Json;
 using System.Collections.Concurrent;
 using System.ComponentModel;
+using System.Threading;
 
 namespace Denyo.ConnectionBridge.Server.TCPServer
 {
@@ -135,17 +136,26 @@ namespace Denyo.ConnectionBridge.Server.TCPServer
                 {
                     if(this.IsActive)
                     {
-                        if(!bAcceptLoop)
-                            new Task(AcceptIncoming_Connection).Start();
+                        if (!bAcceptLoop)
+                            //new Task(AcceptIncoming_Connection).Start();
+                            Task.Run(() => AcceptIncoming_Connection());
 
                         if(!bNegotiationLoop && StagingClients.Count>0)
-                            new Task(Negotiate_Connection).Start();
+                            //new Task(Negotiate_Connection).Start();
+                            Task.Run(() => Negotiate_Connection());
 
-                        if(!bReceiveLoop)
-                            new Task(ReceiveMessages).Start();
+                        if (!bReceiveLoop && Clients.Count>0)
+                            //new Task(ReceiveMessages).Start();
+                            Task.Run(() => ReceiveMessages());
 
+                        //Log("bMessageProcessorLoop " + bMessageProcessorLoop + " ReceivedMessages.Count" + ReceivedMessages.Count);
                         if (!bMessageProcessorLoop && ReceivedMessages.Count > 0)
-                            new Task(ProcessMessages).Start();
+                        {
+                            //new Task(ProcessMessages).Start();
+                            Log("ProcessMessages Call St");
+                            Task.Run(() => ProcessMessages());
+                            Log("ProcessMessages Call End");
+                        }
                     }
                 }
                 catch (Exception mwp_ex)
@@ -153,7 +163,7 @@ namespace Denyo.ConnectionBridge.Server.TCPServer
                     Log(mwp_ex, "TCP Processor Error");
                 }
 
-                System.Threading.Thread.Sleep(100);
+                System.Threading.Thread.Sleep(50);
             }
         }
 
@@ -228,6 +238,8 @@ namespace Denyo.ConnectionBridge.Server.TCPServer
 
             try
             {
+                //Log("AcceptIncomingConnection St. " + bAcceptLoop + " SC: " + StagingClients.Count + " TID: "+Thread.CurrentThread.ManagedThreadId);
+
                 bAcceptLoop = true;
 
                 //while (bAcceptLoop)
@@ -262,6 +274,9 @@ namespace Denyo.ConnectionBridge.Server.TCPServer
                 }
 
                 bAcceptLoop = false;
+
+                //Log("Accept Loop End " + bAcceptLoop + " SC: " + StagingClients.Count + " TID: " + Thread.CurrentThread.ManagedThreadId);
+               
             }
             catch (Exception ICex)
             {
@@ -609,6 +624,8 @@ namespace Denyo.ConnectionBridge.Server.TCPServer
         {
             try
             {
+                //Log("ReceiveMessages St. " + bReceiveLoop + " Msg: " + ReceivedMessages.Count + " TID: " + Thread.CurrentThread.ManagedThreadId);
+
                 bReceiveLoop = true;
                 //while(bReceiveLoop)
                 {
@@ -675,8 +692,9 @@ namespace Denyo.ConnectionBridge.Server.TCPServer
 
                 }
 
+                //Log("ReceiveMessages End. " + bReceiveLoop + " Msg: " + ReceivedMessages.Count + " TID: " + Thread.CurrentThread.ManagedThreadId);
                 bReceiveLoop = false;
-
+                
             }
             catch(Exception ex)
             {
@@ -698,16 +716,13 @@ namespace Denyo.ConnectionBridge.Server.TCPServer
                 return false;
             }
         }
-        public void ProcessMessages()
-        {
-            try
-            {
-                bMessageProcessorLoop = true;
 
-                DataPacket dpMsgReceived;
-                while(ReceivedMessages.TryDequeue(out dpMsgReceived))
+        void ProcessOneMessage(DataPacket dpMsgReceived)
+        {
+             try
                 {
-                    switch(dpMsgReceived.Type)
+                    //Log("ProcessOneMessage " + bMessageProcessorLoop + " Messages: " + ReceivedMessages.Count + " TID:" + Thread.CurrentThread.ManagedThreadId);
+                    switch (dpMsgReceived.Type)
                     {
                         case PacketType.MonitoringData:
                             {
@@ -718,51 +733,96 @@ namespace Denyo.ConnectionBridge.Server.TCPServer
                                 string Output = string.Empty;
                                 try
                                 {
-                                     Input = dpMsgReceived.Message.Split(",".ToCharArray())[0];
-                                     OutputHexa = dpMsgReceived.Message.Split(",".ToCharArray())[1];
-                                     Output = DataStructures.Converter.HexaToString(OutputHexa, Input);
+                                    Input = dpMsgReceived.Message.Split(",".ToCharArray())[0];
+                                    OutputHexa = dpMsgReceived.Message.Split(",".ToCharArray())[1];
+                                    Output = DataStructures.Converter.HexaToString(OutputHexa, Input);
 
-                                    isSaved = dbInteraction.UpdateMonitoringStatus(dpMsgReceived.SenderID, Input, Output,OutputHexa, dpMsgReceived.TimeStamp);
+                                    isSaved = dbInteraction.UpdateMonitoringStatus(dpMsgReceived.SenderID, Input, Output, OutputHexa, dpMsgReceived.TimeStamp);
 
                                     Log(dpMsgReceived.SenderID + " > " + Input + " : " + OutputHexa + " : "+ Output + " DB: " + isSaved);
 
                                     //if (!isSaved)
-                                    //    Log(dpMsgReceived.SenderID + " > " + dpMsgReceived.Message.Split(",".ToCharArray())[0] + " : " + dpMsgReceived.Message.Split(",".ToCharArray())[1] + " DB: " + isSaved);
+                                    //    //VT//Log(dpMsgReceived.SenderID + " > " + dpMsgReceived.Message.Split(",".ToCharArray())[0] + " : " + dpMsgReceived.Message.Split(",".ToCharArray())[1] + " DB: " + isSaved);
                                 }
                                 catch (Exception DBex)
                                 {
-                                    Log("ProcessMessages: Error saving MonitoringData [ " + Input + "," + Output + "," +OutputHexa + "] to DB: "+ isSaved + " Err: " + DBex.Message);
+                                    Log("ProcessOneMessage: Error saving MonitoringData [ " + Input + "," + Output + "," + OutputHexa + "] to DB: " + isSaved + " Err: " + DBex.Message);
                                 }
                             }
                             break;
                         case PacketType.Request:
                         case PacketType.Response:
                             {
-                                Log("Transaction: From:" + dpMsgReceived.SenderID + " To:" + dpMsgReceived.RecepientID);
-                                if(Clients.Count(x=>x.Key==dpMsgReceived.RecepientID)>0)
+                                //VT//Log("Transaction: From:" + dpMsgReceived.SenderID + " To:" + dpMsgReceived.RecepientID);
+                                if (Clients.Count(x => x.Key == dpMsgReceived.RecepientID) > 0)
                                 {
                                     //PostMessages.Enqueue(dpMsgReceived);
                                     if (SendMessage(dpMsgReceived))
-                                        Log("Sent");
+                                    {
+                                        //VT//Log("Sent");
+                                    }
                                     else
-                                        Log("Send Failed");
+                                    {
+                                        //VT//Log("Send Failed");
+                                    }
                                 }
                                 else
                                 {
-                                    Log("Client Not found. Message not sent");
+                                    //VT//Log("Client Not found. Message not sent");
                                     ProcessedMessages.Enqueue(dpMsgReceived);
                                 }
                             }
                             break;
-                            
+
                     }
                 }
+                catch(Exception ex)
+                {
+                    Log("ProcessOneMessage Ex" + ex.Message);
+                }
+           
+        }
+
+        public void ProcessMessages()
+        {
+            try
+            {
+                Log("ProcessMessages St. " + bMessageProcessorLoop + " Messages: " + ReceivedMessages.Count + " TID:" + Thread.CurrentThread.ManagedThreadId);
+
+                bMessageProcessorLoop = true;
+
+                var watch = System.Diagnostics.Stopwatch.StartNew();
+                while (ReceivedMessages.Count > 0)
+                {
+                    watch.Start();
+                    int counter = 10;
+                    List<DataPacket> listOfDatapackets = new List<DataPacket>();
+                    while (ReceivedMessages.Count > 0 && counter>0)
+                    {
+                        DataPacket dpMsgReceived;
+                        if(ReceivedMessages.TryDequeue(out dpMsgReceived))
+                            listOfDatapackets.Add(dpMsgReceived);
+                    }
+                    watch.Stop();
+                    Console.WriteLine("Dequeue " + listOfDatapackets.Count + " took "+watch.ElapsedMilliseconds + " ms from sourcecount "+ ReceivedMessages.Count);
+
+                    watch.Reset();
+                    watch.Start();
+                    //var rangePartitioner = Partitioner.Create(0, listOfDatapackets.Count);
+                    Parallel.ForEach(listOfDatapackets, (dp) => { ProcessOneMessage(dp); });
+                    watch.Stop();
+                    Console.WriteLine(listOfDatapackets.Count + " execution took " + watch.ElapsedMilliseconds);
+                }
+
 
                 bMessageProcessorLoop = false;
+
+                Log("ProcessMessages End. " + bMessageProcessorLoop + " Messages: " + ReceivedMessages.Count + " TID:" + Thread.CurrentThread.ManagedThreadId);
             }
-            catch(Exception Pex)
+            catch (Exception Pex)
             {
                 Log("ProcessMessages Err." + Pex);
+                bMessageProcessorLoop = false;
             }
         }
         public bool SendMessage(DataPacket dpToSend)
