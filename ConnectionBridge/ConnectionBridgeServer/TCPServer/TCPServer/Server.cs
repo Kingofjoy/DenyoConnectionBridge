@@ -753,22 +753,22 @@ namespace Denyo.ConnectionBridge.Server.TCPServer
                         case PacketType.Request:
                         case PacketType.Response:
                             {
-                                //VT//Log("Transaction: From:" + dpMsgReceived.SenderID + " To:" + dpMsgReceived.RecepientID);
+                                Log("Transaction: From:" + dpMsgReceived.SenderID + " To:" + dpMsgReceived.RecepientID);
                                 if (Clients.Count(x => x.Key == dpMsgReceived.RecepientID) > 0)
                                 {
                                     //PostMessages.Enqueue(dpMsgReceived);
                                     if (SendMessage(dpMsgReceived))
                                     {
-                                        //VT//Log("Sent");
+                                        Log("Sent");
                                     }
                                     else
                                     {
-                                        //VT//Log("Send Failed");
+                                        Log("Send Failed");
                                     }
                                 }
                                 else
                                 {
-                                    //VT//Log("Client Not found. Message not sent");
+                                    Log("Client Not found. Message not sent");
                                     ProcessedMessages.Enqueue(dpMsgReceived);
                                 }
                             }

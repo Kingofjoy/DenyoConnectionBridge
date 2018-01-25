@@ -9,6 +9,7 @@ using Denyo.ConnectionBridge.DataStructures;
 using Newtonsoft.Json;
 using System.Collections.Concurrent;
 using System.Threading;
+using System.Configuration;
 
 namespace Denyo.ConnectionBridge.Server.WebServer
 {
@@ -18,6 +19,8 @@ namespace Denyo.ConnectionBridge.Server.WebServer
 
         private static readonly DenyoCBWebAPI instance = new DenyoCBWebAPI();
 
+        string InstanceName = string.Empty;
+        
         ConcurrentQueue<DataPacket> ReceivedMessages
         {
             get; set;
@@ -40,6 +43,8 @@ namespace Denyo.ConnectionBridge.Server.WebServer
             ReceivedMessages = MessageQueuesRef["ReceivedMessages"];
             PostMessages = MessageQueuesRef["PostMessages"];
             ProcessedMessages = MessageQueuesRef["ProcessedMessages"];
+
+            InstanceName = ConfigurationManager.AppSettings["AppId"];
         }
         public DenyoCBWebAPI()
         {
@@ -82,7 +87,13 @@ namespace Denyo.ConnectionBridge.Server.WebServer
                 Console.WriteLine("Enqueue web St. " + DateTime.Now.ToString("YYYYMMDD HH:mm:ss:fff") + " Msg: " + ReceivedMessages.Count + " TID: " + Thread.CurrentThread.ManagedThreadId);
                 DataPacket Ack = new DataPacket();
                 Ack = JsonConvert.DeserializeObject<DataPacket>(dpInputString);
+                Ack.SenderID = InstanceName;
+                Ack.SenderType = AppType.Server;
+                Ack.RecepientID = dpInputPacket.SenderID;
+                Ack.RecepientType = dpInputPacket.SenderType;
                 Ack.Message = "ACK." + Ack.Message;
+                Ack.Type = PacketType.Acknowledge;
+                Ack.TimeStamp = DateTime.Now;
                 return JsonConvert.SerializeObject(Ack);
 
             }
