@@ -20,9 +20,16 @@ namespace TestHost
         
         static void Main(string[] args)
         {
-            //Console.WriteLine("Test");
+            Console.WriteLine("Test");
             //Console.WriteLine("01 03 02 00 00 B8 44 , LOADPOWER1");
-            //Console.WriteLine(Denyo.ConnectionBridge.DataStructures.Converter.HexaToString("01 03 02 00 00 B8 44", "LOADPOWER1"));
+            //Console.WriteLine(Denyo.ConnectionBridge.DataStructures.Converter.HexaToString("01 03 02 00 00 B8 44", "MODE"));
+            //Console.WriteLine(Denyo.ConnectionBridge.DataStructures.Converter.HexaToString("01 03 02 00 07 F9 86", "MODE"));
+            //Console.WriteLine(Denyo.ConnectionBridge.DataStructures.Converter.HexaToString("01 03 02 01 F7 F8 52", "FREQ"));
+            //Console.WriteLine(Denyo.ConnectionBridge.DataStructures.Converter.HexaToString("01 03 02 00 28 B8 5A", "LOADPOWER"));
+            //Console.WriteLine(Denyo.ConnectionBridge.DataStructures.Converter.HexaToString("01 03 02 00 64 B9 AF", "LOADPOWERFACTOR"));
+            //Console.WriteLine(Denyo.ConnectionBridge.DataStructures.Converter.HexaToString("01 03 02 00 01 79 84 01 03 02 05 E7 FB SE", "ENGSPEED"));
+            //Console.WriteLine(Denyo.ConnectionBridge.DataStructures.Converter.HexaToString("01 03 02 00 8B F8 23 01 03 02 00 18 B8 4E", "OILPRESSURE"));
+            Console.WriteLine(Denyo.ConnectionBridge.DataStructures.Converter.HexaToString("01 03 02 00 00 02 4B bb 64", "RUNNINGHR"));
 
             //Console.ReadLine();
             Console.WriteLine("Init");

@@ -737,7 +737,13 @@ namespace Denyo.ConnectionBridge.Server.TCPServer
                                     OutputHexa = dpMsgReceived.Message.Split(",".ToCharArray())[1];
                                     Output = DataStructures.Converter.HexaToString(OutputHexa, Input);
 
+                                    if(Input == "ALARMS" || Input == "A")
+                                    {
+                                    // Need to call alarm handler
                                     isSaved = dbInteraction.UpdateMonitoringStatus(dpMsgReceived.SenderID, Input, Output, OutputHexa, dpMsgReceived.TimeStamp);
+                                    }
+                                    else
+                                        isSaved = dbInteraction.UpdateMonitoringStatus(dpMsgReceived.SenderID, Input, Output, OutputHexa, dpMsgReceived.TimeStamp);
 
                                     Log(dpMsgReceived.SenderID + " > " + Input + " : " + OutputHexa + " : "+ Output + " DB: " + isSaved);
 

@@ -47,6 +47,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AlarmHandler.cs" />
     <Compile Include="Client.cs" />
     <Compile Include="DBInteractions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

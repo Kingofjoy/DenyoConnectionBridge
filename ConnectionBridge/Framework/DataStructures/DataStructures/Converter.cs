@@ -13,12 +13,17 @@ namespace Denyo.ConnectionBridge.DataStructures
             string sHexaValue = string.Empty;
             try
             {
+                Hexavalue = Hexavalue.Trim();
+                //Console.WriteLine("HexaToString: "+Hexavalue + " : " + UnitCode);
                 sHexaValue = HexaToString(Hexavalue);
+                //Console.WriteLine("HexaToString: " + Hexavalue + " : " + UnitCode + " = " + sHexaValue);
 
-                if(UnitCode=="FREQ" || UnitCode == "COLLANTTEMP" || UnitCode == "BATTERYVOLTAGE" || UnitCode == "OILPRESSURE")
+                if (UnitCode=="FREQ" || UnitCode == "COLLANTTEMP" || UnitCode == "BATTERYVOLTAGE" || UnitCode == "OILPRESSURE")
                 {
-                    //if(sHexaValue.IndexOf(".")>0)
-                        sHexaValue = (Math.Round( (Decimal.Parse(sHexaValue) / 10) , 1 )).ToString();
+
+                    sHexaValue = (((Decimal.Parse(sHexaValue) / 10))).ToString();
+                    sHexaValue = sHexaValue.Substring(0, sHexaValue.IndexOf(".") + 2);
+                    //sHexaValue = (Math.Round( (Decimal.Parse(sHexaValue) / 10) , 1 )).ToString();
                 }
                 else if(UnitCode == "RUNNINGHR")
                 {
@@ -28,13 +33,14 @@ namespace Denyo.ConnectionBridge.DataStructures
                         sHexaValue = (Decimal.Parse(sHexaValue) * 100).ToString();
                     else
                         sHexaValue = (Decimal.Parse(sHexaValue) * 10).ToString();
+                    sHexaValue = sHexaValue.TrimEnd("0".ToCharArray());
                 }
-                else if(UnitCode == "FUELLEVEL" || UnitCode == "VOLT1" || UnitCode == "VOLT2" || UnitCode == "VOLT3" || UnitCode == "CURRENT1" || UnitCode == "CURRENT2" || UnitCode == "CURRENT3" || UnitCode == "ENGSPEED" || UnitCode == "LOADPOWER1" || UnitCode == "LOADPOWER2" || UnitCode == "LOADPOWER3")
+                else if(UnitCode == "FUELLEVEL" || UnitCode == "VOLT1" || UnitCode == "VOLT2" || UnitCode == "VOLT3" || UnitCode == "CURRENT1" || UnitCode == "CURRENT2" || UnitCode == "CURRENT3" || UnitCode == "!!ENGSPEED" || UnitCode == "LOADPOWER1" || UnitCode == "LOADPOWER2" || UnitCode == "LOADPOWER3")
                 {
                     sHexaValue = Math.Round(Decimal.Parse(sHexaValue)).ToString();
                 }
                 else if(UnitCode == "ENGINESTATE" || UnitCode == "MODE")
-                {
+                {                    
                     sHexaValue = Math.Ceiling(Decimal.Parse(sHexaValue)).ToString();
                 }
             }
@@ -42,6 +48,7 @@ namespace Denyo.ConnectionBridge.DataStructures
             {
                 Console.WriteLine("HexCon Err:"+conex.Message+". Data:"+Hexavalue+ ". UnitCode: "+UnitCode);
             }
+            Console.WriteLine("HexaToString: " + Hexavalue + " = " + UnitCode + " = " + sHexaValue);
             return sHexaValue;
         }
         public static string HexaToString(string Hexavalue)
@@ -54,10 +61,15 @@ namespace Denyo.ConnectionBridge.DataStructures
                 string[] hexapairs = new string[(Hexavalue.Length / 2)+1];
                 if (Hexavalue.IndexOf(" ")>0)
                 {
+                    //Hexavalue = Hexavalue.Substring(6);
+                    //Hexavalue = Hexavalue.Substring(0, Hexavalue.Length - 6);
                     hexapairs = Hexavalue.Split(" ".ToCharArray());
                 }
                 else
                 {
+                    //Hexavalue = Hexavalue.Substring(4);
+                    //Hexavalue = Hexavalue.Substring(0, Hexavalue.Length - 4);
+
                     for (int i = 0; i <= (Hexavalue.Length / 2); i += 2)
                         hexapairs[i/2] = Hexavalue.Substring(i, 2);
 
@@ -66,12 +78,16 @@ namespace Denyo.ConnectionBridge.DataStructures
                 }
 
                 string sHexSet1, sHexSet2;
-               
+
+                //Console.WriteLine(Hexavalue + " length " + hexapairs.Length); 
                 if (hexapairs.Length==7)
                 {
                     sHexSet1 = hexapairs[3] + hexapairs[4];
-                    sHexSet2 = hexapairs[5] + hexapairs[6];
+                    //sHexSet2 = hexapairs[5] + hexapairs[6];
+                    strValue = Convert.ToInt64(sHexSet1, 16).ToString();
+                    //Console.WriteLine("strValue "+ sHexSet1 + " Int64: "  + strValue);
                     strValue = int.Parse(sHexSet1, System.Globalization.NumberStyles.HexNumber).ToString();
+                    //Console.WriteLine("strValue " + sHexSet1 + "HexNumber: " + strValue);
                 }
                 else 
                 {
@@ -80,7 +96,6 @@ namespace Denyo.ConnectionBridge.DataStructures
                     strValue = int.Parse(sHexSet1, System.Globalization.NumberStyles.HexNumber).ToString()
                               +"."+ int.Parse(sHexSet2, System.Globalization.NumberStyles.HexNumber).ToString();
                 }
-                
             }
             catch(Exception ex)
             {
