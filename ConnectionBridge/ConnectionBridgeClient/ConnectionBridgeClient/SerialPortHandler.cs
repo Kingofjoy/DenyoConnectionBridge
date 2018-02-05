@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.IO.Ports;
 using System.Linq;
 using System.Text;
@@ -25,6 +26,8 @@ namespace Denyo.ConnectionBridge.Client
 
         private bool GotResponseForPrevCmd { get; set; }
 
+        private bool CommandSent { get; set; }
+
         private CommunicationMode _mode { get; set; }
 
         private int waitCounter { get; set; }
@@ -34,9 +37,23 @@ namespace Denyo.ConnectionBridge.Client
         private Queue<string> ManualCmdQueue;
 
         private Tuple<string, CommunicationMode, bool, string> CurrentCmd;
+        private Tuple<string, CommunicationMode, bool, string> SentCmd;
+
+        public DateTime CmdSentTime = DateTime.Now;
+
+        public DateTime CmdReceivedTime = DateTime.Now;
+
+        string strTmpRequest, strTmpResponse;
+
+        public bool _sending;
+
+        public bool _receiving;
+
+        public bool IsConnected { get; set; }
 
         public SerialPortHandler(int BaudRate, int DataBits, StopBits StopBits, Parity Parity, string PortName)
         {
+            IsConnected = false;
             serialPort = new SerialPort();
             _baudRate = BaudRate;
             _dataBits = DataBits;
@@ -53,6 +70,8 @@ namespace Denyo.ConnectionBridge.Client
         {
             try
             {
+                UpdateLogWindow("Serial Initialization");
+
                 if (serialPort.IsOpen)
                 {
                     serialPort.Close();
@@ -63,50 +82,60 @@ namespace Denyo.ConnectionBridge.Client
                 serialPort.Parity = _parity;
                 serialPort.PortName = _portName;
                 serialPort.Open();
+                IsConnected = true;
             }
             catch (Exception ex)
             {
+                IsConnected = false;
+                UpdateLogWindow("Serial OpenConnection Err." + ex.Message);
                 throw;
             }
         }
 
         public void SendNextCommand(string cmd, CommunicationMode mode, bool IsManulalCmd = false)
         {
-            //_mode = mode;
-            if(IsManulalCmd)
+            try
             {
-                ManualCmdQueue.Enqueue(cmd);
-            }
-            if (!GotResponseForPrevCmd)
-            {
-                waitCounter++;
-                if (waitCounter > 5)
+                //_mode = mode;
+                if (IsManulalCmd)
                 {
-                    waitCounter = 0;
-                    GotResponseForPrevCmd = true;
-                    Logger.Log("Command Timed Out for the command:" + CurrentCmd.Item1, new Exception("TimedOut Exception"));
-                    if (ManualCmdQueue.Count > 0 && CurrentCmd.Item3)
-                    {
-                        SaveResponse(cmd + "," + "Command Timed Out, No response from the device", CurrentCmd.Item3);
-                        SendNextCommand(ManualCmdQueue.Dequeue(), CommunicationMode.HEXA, true);
-                    }
-                    else
-                    {
-                        Main.cmdCounter++;
-                       
-                    }
+                    ManualCmdQueue.Enqueue(cmd);
                 }
-                return;
-            }
-            else
-            {
+                //if (!GotResponseForPrevCmd)
+                //{
+                //    UpdateLogWindow("waiting for sending cmd:" + CurrentCmd.Item4 + "\n");
+                //    waitCounter++;
+                //    if (waitCounter > int.Parse(ConfigurationManager.AppSettings["WaitCounter"]))
+                //    {
+
+                //        CommandSent = false;
+                //        waitCounter = 0;
+                //        GotResponseForPrevCmd = true;
+                //        UpdateLogWindow("Command Timed Out for the command:" + CurrentCmd.Item4 + " . Wait: " + waitCounter);
+                //        Logger.Log("Command Timed Out for the command:" + CurrentCmd.Item4, new Exception("TimedOut Exception"));
+                //        if (ManualCmdQueue.Count > 0 && CurrentCmd.Item3)
+                //        {
+                //            SaveResponse(cmd + "," + "Command Timed Out, No response from the device", CurrentCmd.Item3);
+                //            SendNextCommand(ManualCmdQueue.Dequeue(), CommunicationMode.HEXA, true);
+                //        }
+                //        else
+                //        {
+                //            Main.cmdCounter++;
+
+                //        }
+                //    }
+                //    return;
+                //}
+                //else
+                //{
                 if (ManualCmdQueue.Count > 0)
                 {
                     string mCmd = ManualCmdQueue.Dequeue();
-                    UpdateLogWindow("Received Manual CMD:"+ mCmd +"    *****");
+                    UpdateLogWindow("Received Manual CMD:" + mCmd + "    *****");
                     DataSender(mCmd, CommunicationMode.HEXA);
-                    CurrentCmd = new Tuple<string, CommunicationMode, bool,string>(mCmd, CommunicationMode.HEXA, true,"Manual:"+
-                                                   ((Metadata.InputDictionary.Count(x => x.Hexa == mCmd)>0) ? Metadata.InputDictionary.FirstOrDefault(x => x.Hexa == mCmd).Name : mCmd));
+                    CurrentCmd = new Tuple<string, CommunicationMode, bool, string>(mCmd, CommunicationMode.HEXA, true, "Manual," +
+                                                   ((Metadata.InputDictionaryCollection[Metadata.ActiveHexaSet].Count(x => x.Hexa == mCmd) > 0) ? Metadata.InputDictionaryCollection[Metadata.ActiveHexaSet].FirstOrDefault(x => x.Hexa == mCmd).Name : mCmd));
+                    //to write logic to find names in alll list
                 }
                 else
                 {
@@ -114,9 +143,15 @@ namespace Denyo.ConnectionBridge.Client
                     _isManualCmd = IsManulalCmd;
                     _mode = mode;
                     DataSender(cmd, mode);
-                    CurrentCmd = new Tuple<string, CommunicationMode, bool,string>(cmd, mode, IsManulalCmd,Metadata.InputDictionary.FirstOrDefault(x=>x.Hexa==cmd).Name);
-                    GotResponseForPrevCmd = false;
+                    CurrentCmd = new Tuple<string, CommunicationMode, bool, string>(cmd, mode, IsManulalCmd, Metadata.ActiveHexaSet + "," + Metadata.InputDictionaryCollection[Metadata.ActiveHexaSet].FirstOrDefault(x => x.Hexa == cmd).Name);
                 }
+                GotResponseForPrevCmd = false;
+
+                //}
+            }
+            catch (Exception ex)
+            {
+                UpdateLogWindow("SendNextCommand Err. " + ex.Message);
             }
         }
 
@@ -128,28 +163,54 @@ namespace Denyo.ConnectionBridge.Client
 
         private void DataSender(string cmd, CommunicationMode mode)
         {
-            UpdateLogWindow("inside sender:"+ cmd+"   , " + mode.ToString() + "\n");
-
-            switch (mode)
+            try
             {
-                case CommunicationMode.TEXT:
-                    serialPort.Write(cmd);
+                //FormRef.timer1.Enabled = false;
+                _sending = true;
+                if (string.IsNullOrEmpty(cmd) || string.IsNullOrWhiteSpace(cmd))
                     return;
+                else
+                    cmd = cmd.Trim();
+                if (Metadata.InputDictionaryCollection[Metadata.ActiveHexaSet].Count(X => X.Hexa == cmd) > 0)
+                    UpdateLogWindow("sending cmd:" + Metadata.InputDictionaryCollection[Metadata.ActiveHexaSet].FirstOrDefault(x => x.Hexa == cmd).Name + " : " + cmd);
+                else
+                    UpdateLogWindow("sending cmd:" + cmd);
 
-                case CommunicationMode.HEXA:
-                    try
-                    {
-                        byte[] buffer = HexToByte(cmd);
-                        serialPort.Write(buffer, 0, buffer.Length);
-                    }
-                    catch (Exception ex)
-                    {
-                        UpdateLogWindow("DataSender failed:" + ex.Message);
+                switch (mode)
+                {
+                    case CommunicationMode.TEXT:
+                        serialPort.Write(cmd);
+                        CmdSentTime = DateTime.Now;
+                        CommandSent = true;
+                        break;
 
-                        Logger.Log("DataSender: Failed.", ex);
-                        throw;
-                    }
-                    return;
+                    case CommunicationMode.HEXA:
+                        try
+                        {
+                            byte[] buffer = HexToByte(cmd);
+                            serialPort.Write(buffer, 0, buffer.Length);
+                            CmdSentTime = DateTime.Now;
+                            CommandSent = true;
+                        }
+                        catch (Exception ex)
+                        {
+                            UpdateLogWindow("DataSender failed:" + ex.Message);
+                            CommandSent = false;
+                            Logger.Log("DataSender: Failed.", ex);
+                            throw;
+                        }
+                        break;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                UpdateLogWindow("DataSender Err" + ex.Message + " Data: " + (string.IsNullOrEmpty(cmd) ? " " : cmd));
+            }
+            finally
+            {
+                //FormRef.timer1.Enabled = true;
+                _sending = false;
             }
         }
 
@@ -166,7 +227,9 @@ namespace Denyo.ConnectionBridge.Client
 
         private void DataReceiver(object sender, SerialDataReceivedEventArgs e)
         {
-            try {
+            try
+            {
+                _receiving = true;
                 UpdateLogWindow("DataReceiver:\n");
 
                 GotResponseForPrevCmd = true;
@@ -181,6 +244,7 @@ namespace Denyo.ConnectionBridge.Client
                 {
                     case CommunicationMode.TEXT:
                         response = serialPort.ReadExisting();
+                        CmdReceivedTime = DateTime.Now;
                         break;
 
                     case CommunicationMode.HEXA:
@@ -188,34 +252,78 @@ namespace Denyo.ConnectionBridge.Client
                             int bytesToRead = serialPort.BytesToRead;
                             byte[] buffer = new byte[bytesToRead];
                             serialPort.Read(buffer, 0, bytesToRead);
+                            CmdReceivedTime = DateTime.Now;
                             response = ByteToHex(buffer);
                             break;
                         }
                 }
-                UpdateLogWindow("[ Request: " + CurrentCmd.Item4 + " ][ Response: " + response + " ]");
-                SaveResponse(CurrentCmd.Item4+","+response,CurrentCmd.Item3);
-            }
-            catch(Exception ex)
-            {
-                UpdateLogWindow("Receiver Error:"+ex.Message + "\n");
+                //FormRef.timer1.Enabled = false;
+                if (!CommandSent)
+                {
+                    UpdateLogWindow("[ Request: " + CurrentCmd.Item4 + " ][ Response: " + response + " ] [NOTSAVED][" + Main.cmdCounter.ToString() + "]");
+                    return;
+                }// TO avoid saving response if a command is considered to be waited enough with no response
 
+                UpdateLogWindow("[ Request: " + CurrentCmd.Item4 + " ][ Response: " + response + " ][" + Main.cmdCounter.ToString() + "]");
+                SaveResponse(CurrentCmd.Item4 + "," + response, CurrentCmd.Item3);
+
+                //if(CurrentCmd.Item4.IndexOf("ENGINESTATE") > 0 && int.Parse(response) == 1)
+                //{
+
+                //}
+                FormRef.Process();
+            }
+            catch (Exception ex)
+            {
+                UpdateLogWindow("Receiver Error:" + ex.Message + "\n");
+            }
+            finally
+            {
+                _receiving = false;
             }
         }
 
         private void SaveResponse(string response, bool IsManualCmd)
         {
-            FormRef.SaveResponse(response);
+            try
+            {
+                strTmpRequest = response.Split(",".ToCharArray())[0];
+                if (strTmpRequest == "ALARMS")
+                {
+                    strTmpResponse = response.Split(",".ToCharArray())[1];
+                    strTmpResponse = DataStructures.Converter.HexaToString(strTmpResponse, strTmpRequest);
+                    if (!int.TryParse(strTmpResponse, out Main.lastAlarmValue))
+                        Main.lastAlarmValue = 0;
+                }
+                else if (strTmpRequest == "A")
+                {
+                    strTmpResponse = response.Split(",".ToCharArray())[1];
+                    strTmpResponse = DataStructures.Converter.HexaToString(strTmpResponse, strTmpRequest);
+                    if (System.Text.RegularExpressions.Regex.IsMatch(strTmpResponse, @"^[a-zA-Z0-9 ]+$"))
+                    {
+                        UpdateLogWindow("*** ALARM : " + strTmpResponse + " ****");
+                    }
+                }
+
+                FormRef.SaveResponse(response, IsManualCmd);
+            }
+            catch (Exception aex)
+            {
+                UpdateLogWindow("SaveResponse Error:" + aex.Message);
+            }
+
         }
 
         private void UpdateLogWindow(string log, bool init = false)
         {
-            try {
+            try
+            {
                 if (init)
                     FormRef.rtbDisplay.Clear();
-                FormRef.rtbDisplay.AppendText(log);
+                FormRef.rtbDisplay.AppendText(DateTime.Now.ToString("DD HH:mm:ss:ffff") + log);
                 FormRef.rtbDisplay.AppendText(Environment.NewLine);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
 
             }

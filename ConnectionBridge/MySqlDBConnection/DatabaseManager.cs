@@ -169,5 +169,35 @@ namespace Denyo.ConnectionBridge.MySqlDBConnection
             return Count;
         }
 
+        public int UpdateSetPoints(string DeviceID, string Type, string Label, string Value, string Hex_Value, DateTime ReceivedTime, string Comment)
+        {
+            try
+            {
+                using (MySqlConnection con = new MySqlConnection(ConnectionString))
+                {
+                    using (MySqlCommand cmd = new MySqlCommand("sp_setpointstorage", con))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.Parameters.Add(new MySqlParameter("@pUnit_Name", DeviceID));
+                        cmd.Parameters.Add(new MySqlParameter("@pType", Type));
+                        cmd.Parameters.Add(new MySqlParameter("@pLabel", Label));
+                        cmd.Parameters.Add(new MySqlParameter("@pValue", Value));
+                        cmd.Parameters.Add(new MySqlParameter("@pHexa_Value", Hex_Value));
+                        cmd.Parameters.Add(new MySqlParameter("@pReceived_Time", ReceivedTime));
+                        cmd.Parameters.Add(new MySqlParameter("@pComment", Comment));
+                        cmd.Parameters.Add(new MySqlParameter("@pRows_Affected", MySqlDbType.Int32)); // .Direction = ParameterDirection.Output);
+                        cmd.Parameters["@pRows_Affected"].Direction = ParameterDirection.Output;
+                        cmd.Connection.Open();
+                        cmd.ExecuteNonQuery();
+                        return (int)cmd.Parameters["@pRows_Affected"].Value;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("UpdateSetPoints err:" + ex.Message);
+                return -1;
+            }
+        }
     }
 }

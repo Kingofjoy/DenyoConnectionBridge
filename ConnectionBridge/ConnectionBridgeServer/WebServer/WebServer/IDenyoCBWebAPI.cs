@@ -24,6 +24,11 @@ namespace Denyo.ConnectionBridge.Server.WebServer
            UriTemplate = "Transact/Data={dpInput}")]
         string Transact(string dpInput);
 
+        [OperationContract]
+        [WebInvoke(Method = "GET", ResponseFormat = WebMessageFormat.Json, BodyStyle = WebMessageBodyStyle.Bare,
+           UriTemplate = "TransactMin/{Sender}/{Receiver}/{Message}")]
+        string TransactMin(string Sender, string Receiver, string Message);
+        
         // Sample
         /*
 

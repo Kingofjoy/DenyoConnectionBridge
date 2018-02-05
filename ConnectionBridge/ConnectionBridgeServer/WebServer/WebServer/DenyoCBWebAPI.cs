@@ -82,9 +82,9 @@ namespace Denyo.ConnectionBridge.Server.WebServer
 
                 //dpInputPacket.SenderID = strSenderName;
                 //dpInputPacket.RecepientID = strReceiverName;
-                Console.WriteLine("Enqueue web St. " + DateTime.Now.ToString("YYYYMMDD HH:mm:ss:fff") + " Msg: " + ReceivedMessages.Count + " TID: "+ Thread.CurrentThread.ManagedThreadId);
+                Console.WriteLine("Enqueue web St. " + DateTime.Now.ToString("yyyyMMdd HH:mm:ss:fff") + " Msg: " + ReceivedMessages.Count + " TID: "+ Thread.CurrentThread.ManagedThreadId);
                 ReceivedMessages.Enqueue(dpInputPacket);
-                Console.WriteLine("Enqueue web St. " + DateTime.Now.ToString("YYYYMMDD HH:mm:ss:fff") + " Msg: " + ReceivedMessages.Count + " TID: " + Thread.CurrentThread.ManagedThreadId);
+                Console.WriteLine("Enqueue web St. " + DateTime.Now.ToString("yyyyMMdd HH:mm:ss:fff") + " Msg: " + ReceivedMessages.Count + " TID: " + Thread.CurrentThread.ManagedThreadId);
                 DataPacket Ack = new DataPacket();
                 Ack = JsonConvert.DeserializeObject<DataPacket>(dpInputString);
                 Ack.SenderID = InstanceName;
@@ -102,6 +102,54 @@ namespace Denyo.ConnectionBridge.Server.WebServer
                 dpInputPacket.Message = "Error while processing input." + ex.Message;
             }
             return JsonConvert.SerializeObject(dpInputPacket);
+        }
+
+        public string TransactMin(string Sender, string Receiver, string Message)
+        {
+            DataPacket dpInputPacket = new DataPacket();
+            DataPacket dpOutputPacket = new DataPacket();
+
+            try
+            {
+                dpInputPacket.IsManualCmd = true;
+                dpInputPacket.Message = Message;
+                dpInputPacket.MsgID = DateTime.Now.ToString("ss");
+                dpInputPacket.SenderID = Sender;
+                dpInputPacket.SenderType = AppType.Moderator;
+                dpInputPacket.RecepientID = Receiver;
+                dpInputPacket.RecepientType = AppType.Client;
+                dpInputPacket.Type = PacketType.Request;
+                dpInputPacket.TimeStamp = DateTime.Now;
+
+                Console.WriteLine("Enqueue web2 St. " + DateTime.Now.ToString("yyyyMMdd HH:mm:ss:fff") + " Msg: " + ReceivedMessages.Count + " TID: " + Thread.CurrentThread.ManagedThreadId);
+                ReceivedMessages.Enqueue(dpInputPacket);
+                Console.WriteLine("Enqueue web2 St. " + DateTime.Now.ToString("yyyyMMdd HH:mm:ss:fff") + " Msg: " + ReceivedMessages.Count + " TID: " + Thread.CurrentThread.ManagedThreadId);
+
+             
+                dpOutputPacket.IsManualCmd = true;
+                dpOutputPacket.Message = "ACK." + Message;
+                dpOutputPacket.MsgID = DateTime.Now.ToString("ss");
+                dpOutputPacket.SenderID = InstanceName;
+                dpOutputPacket.SenderType = AppType.Server;
+                dpOutputPacket.RecepientID = Sender;
+                dpOutputPacket.RecepientType = AppType.Moderator;
+                dpOutputPacket.TimeStamp = DateTime.Now;
+                dpOutputPacket.Type = PacketType.Acknowledge;
+
+                
+                return JsonConvert.SerializeObject(dpOutputPacket);
+
+            }
+            catch (Exception ex)
+            {
+                dpOutputPacket.Message = "Error while processing input." + ex.Message;
+                dpOutputPacket.SenderID = InstanceName;
+                dpOutputPacket.SenderType = AppType.Server;
+                dpOutputPacket.TimeStamp = DateTime.Now;
+                dpOutputPacket.Type = PacketType.Acknowledge;
+
+            }
+            return JsonConvert.SerializeObject(dpOutputPacket);
         }
     }
 }

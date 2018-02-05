@@ -29,8 +29,14 @@ namespace Denyo.ConnectionBridge.Client
         public static string PreferredBaudRate { get; set; }
 
         public static int TimerInterval { get; set; }
+        public static string DefaultHexaSet { get; internal set; }
+        public static string ActiveHexaSet { get; internal set; }
 
         public static List<HexaInput> InputDictionary = new List<HexaInput>();
+
+        public static Dictionary<string,List<HexaInput>> InputDictionaryCollection = new Dictionary<string, List<HexaInput>>();
+
+        public static List<HexaInput> SetPointDictionary = new List<HexaInput>();
 
     }
 

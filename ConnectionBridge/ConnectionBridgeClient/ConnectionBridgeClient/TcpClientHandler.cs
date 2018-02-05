@@ -41,7 +41,7 @@ namespace Denyo.ConnectionBridge.Client
 
         public string ServerID = string.Empty;
 
-        //public bool IsServerConnected { get; set; }
+        public bool IsServerConnected { get; set; }
 
         public TcpClientHandler()
         {
@@ -55,7 +55,7 @@ namespace Denyo.ConnectionBridge.Client
                 RSPort = int.Parse(ConfigurationManager.AppSettings["RSPort"]);
 
                 Client = new TcpClient();
-                Main.IsServerConnected = InitiateConnection();
+                IsServerConnected = InitiateConnection();
 
                 //Client.Connect(RSName, RSPort);
 
@@ -474,15 +474,16 @@ namespace Denyo.ConnectionBridge.Client
                         {
                             if (cmd.SenderID != string.Empty)
                             {
-
-                                if (Metadata.InputDictionary.Where(_ => _.Name.Equals(cmd.Message)).Count() == 0)
+                                //to write a logic to find hex from multiple dic
+                                if (Metadata.InputDictionaryCollection[Metadata.ActiveHexaSet].Where(_ => _.Name.Equals(cmd.Message)).Count() == 0)
                                 {
                                     // send invalid cmd response to server
                                     FormRef.SendManualCommand(cmd.Message);
                                 }
                                 else
-
-                                FormRef.SendManualCommand(Metadata.InputDictionary.FirstOrDefault(x=>x.Name==cmd.Message).Hexa);
+                                {
+                                    FormRef.SendManualCommand(Metadata.InputDictionaryCollection[Metadata.ActiveHexaSet].FirstOrDefault(x => x.Name == cmd.Message).Hexa);
+                                }
                             }
                         }
 
@@ -495,7 +496,7 @@ namespace Denyo.ConnectionBridge.Client
                 if(!Client.Connected)
                 {
                     FormRef.bInitAll = false;
-                    Main.IsServerConnected = InitiateConnection();
+                    IsServerConnected = InitiateConnection();
                 }
 
                 Logger.Log("Server connection lost!");
@@ -506,7 +507,7 @@ namespace Denyo.ConnectionBridge.Client
             }
         }
 
-        public void SendMonitoringResponseToServer(string response)
+        public void SendMonitoringResponseToServer(string response,bool IsManualCommandResponse = false)
         {
             try
             {
@@ -518,7 +519,10 @@ namespace Denyo.ConnectionBridge.Client
                 deviceResponse.RecepientID = ServerID;
                 deviceResponse.RecepientType = AppType.Server;
 
-                deviceResponse.Type = PacketType.MonitoringData;
+                if(!IsManualCommandResponse)
+                    deviceResponse.Type = PacketType.MonitoringData;
+                else
+                    deviceResponse.Type = PacketType.Response;
 
                 deviceResponse.Message = response;
                 deviceResponse.TimeStamp = DateTime.Now;

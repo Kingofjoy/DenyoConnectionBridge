@@ -10,6 +10,8 @@ namespace Denyo.ConnectionBridge.Client
 {
     public static class Logger
     {
+        private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
         private static bool IsEnabled;
 
         private static LogType Type;
@@ -31,10 +33,11 @@ namespace Denyo.ConnectionBridge.Client
                 {
                     FormRef.rtbDisplay.AppendText(msg);
                     FormRef.rtbDisplay.AppendText(Environment.NewLine);
-                    if(FormRef.rtbDisplay.TextLength>5000)
+                    if(FormRef.rtbDisplay.TextLength>50000)
                     {
                         FormRef.rtbDisplay.Text = FormRef.rtbDisplay.Text.Substring(FormRef.rtbDisplay.Text.IndexOf(Environment.NewLine, 0, 10));
                     }
+                    log.Debug(msg);
                 }
             }
             catch (Exception ex)
@@ -52,7 +55,7 @@ namespace Denyo.ConnectionBridge.Client
         {
             if (IsEnabled)
             {
-                // log type shold be error
+                log.Error(msg, ex);
             }
         }
 

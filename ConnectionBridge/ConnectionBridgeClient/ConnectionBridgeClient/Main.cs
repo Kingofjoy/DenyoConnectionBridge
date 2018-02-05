@@ -11,6 +11,9 @@ using System.Configuration;
 using Denyo.ConnectionBridge.DataStructures;
 using System.Net.NetworkInformation;
 using System.IO.Ports;
+using Microsoft.Win32;
+using System.Reflection;
+using System.IO;
 
 namespace Denyo.ConnectionBridge.Client
 {
@@ -18,7 +21,7 @@ namespace Denyo.ConnectionBridge.Client
     {
         public static bool IsInternetConnected = false;
 
-        public static bool IsServerConnected = false;
+        //public static bool IsServerConnected = false;
 
         private SerialPortHandler serialPortHandler;
 
@@ -27,10 +30,36 @@ namespace Denyo.ConnectionBridge.Client
         public bool bInitAll;
 
         public static int cmdCounter = 0;
+
+        public static int lastAlarmValue = 0;
+
+        private RegistryKey registryKey;
+
+        private bool _swapRequired;
+
+        private string _swapTo;
+        private bool _InSwapLoop;
+
         public Main()
         {
             InitializeComponent();
+            //StartUp();
+        }
 
+        private void StartUp()
+        {
+            try
+            {
+                registryKey = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Run", true);
+                if (registryKey.GetValue("Connection_Bridge_Client_Startup") == null || (string)registryKey.GetValue("Connection_Bridge_Client_Startup") != Assembly.GetExecutingAssembly().Location)
+                {
+                    registryKey.SetValue("Connection_Bridge_Client_Startup", Assembly.GetExecutingAssembly().Location);
+                }
+            }
+            catch (Exception ex)
+            {
+
+            }
         }
 
         private void InitializeTcpClientHandler()
@@ -58,7 +87,7 @@ namespace Denyo.ConnectionBridge.Client
                 serialPortHandler = new SerialPortHandler(baudRate, dataBits, stopBits, parity, portName);
                 serialPortHandler.FormRef = this;
             }
-            catch(Exception INITSRER)
+            catch (Exception INITSRER)
             {
                 Logger.Log("Unable to initialize Serial Port Err : " + INITSRER.Message);
             }
@@ -106,7 +135,7 @@ namespace Denyo.ConnectionBridge.Client
                 lblDevice.Text = Metadata.AppID;
                 lblRemoteServer.Text = Metadata.ServerIP;
                 timer1.Interval = Metadata.TimerInterval;
-                if(bInitAll) timer1.Enabled = true;
+                //if(bInitAll) timer1.Enabled = true;
                 rdoHex.Checked = true;
                 UpdateForm();
             }
@@ -180,6 +209,10 @@ namespace Denyo.ConnectionBridge.Client
 
                 Metadata.TimerInterval = int.Parse(ConfigurationManager.AppSettings["LoopTime"]);
 
+                Metadata.DefaultHexaSet = ConfigurationManager.AppSettings["DefaultHexaSet"].ToUpper();
+
+                Metadata.ActiveHexaSet = Metadata.DefaultHexaSet;
+
             }
             catch (Exception imEx1)
             {
@@ -188,38 +221,24 @@ namespace Denyo.ConnectionBridge.Client
 
             try
             {
-                string HexaConfigFile = ConfigurationManager.AppSettings["HexaDictionary"];
-                if (string.IsNullOrEmpty(HexaConfigFile))
-                {
-                    MessageBox.Show("Unable to find HexaConfig");
-                    Logger.Log("Unable to find HexaConfig");
-                    //Application.Exit();
-                    //throw new Exception("Unable to find HexaConfig");
-                }
 
-                if (!System.IO.File.Exists(HexaConfigFile))
-                {
-                    MessageBox.Show("Unable to find Hexa Config File");
-                    //Application.Exit(); //test
-                    Logger.Log("Unable to find Hexa Config File");
-                }
+                Metadata.InputDictionaryCollection.Clear();
 
-                foreach (string strlineitem in System.IO.File.ReadLines(HexaConfigFile))
+                //string HexaConfigFile = ConfigurationManager.AppSettings["HexaDictionary"];
+                //string SetPointConfigFile = ConfigurationManager.AppSettings["SetPointDictionary"];
+
+                foreach (string filePath in Directory.GetFiles(Path.GetDirectoryName(Application.ExecutablePath), "Hexa_*.hex", SearchOption.TopDirectoryOnly))
                 {
                     try
                     {
-                        if (string.IsNullOrEmpty(strlineitem) || string.IsNullOrWhiteSpace(strlineitem))
-                            continue;
-                        HexaInput hIN = new HexaInput();
-                        hIN.Raw = strlineitem;
-                        hIN.Hexa = strlineitem.Split(",".ToCharArray())[0];
-                        hIN.Name = strlineitem.Split(",".ToCharArray())[1];
-                        hIN.PX = strlineitem.Substring(0, strlineitem.Length - strlineitem.IndexOf(','));
-
-                        Metadata.InputDictionary.Add(hIN);
+                        ReadHexaInputFromFile(filePath);
                     }
-                    catch { }
+                    catch (Exception ex)
+                    {
+
+                    }
                 }
+
             }
             catch (Exception imEx2)
             {
@@ -227,12 +246,56 @@ namespace Denyo.ConnectionBridge.Client
             }
         }
 
+        private void ReadHexaInputFromFile(string FileName)
+        {
+            string HexaSetName = "";
+            HexaSetName = Path.GetFileName(FileName).Split("_".ToCharArray())[1];
+            HexaSetName = HexaSetName.ToUpper().Replace(".HEX", "");
+            //if (string.IsNullOrEmpty(FileName))
+            //{
+            //    MessageBox.Show("Given file is empty.");
+            //    Logger.Log("Given file is empty.");
+            //    //Application.Exit();
+            //    //throw new Exception("Unable to find HexaConfig");
+            //}
+
+            //if (!System.IO.File.Exists(FileName))
+            //{
+            //    MessageBox.Show("Unable to find given Config file:" + FileName);
+            //    Logger.Log("Unable to find given Config file:" + FileName);
+            //    //Application.Exit(); //test
+            //}
+
+            List<HexaInput> hexList = new List<HexaInput>();
+            foreach (string strlineitem in System.IO.File.ReadLines(FileName))
+            {
+                try
+                {
+                    if (string.IsNullOrEmpty(strlineitem) || string.IsNullOrWhiteSpace(strlineitem))
+                        continue;
+                    HexaInput hIN = new HexaInput();
+                    hIN.Raw = strlineitem;
+                    hIN.Hexa = strlineitem.Split(",".ToCharArray())[0];
+                    hIN.Name = strlineitem.Split(",".ToCharArray())[1];
+                    hIN.PX = strlineitem.Substring(0, strlineitem.Length - strlineitem.IndexOf(','));
+
+                    hexList.Add(hIN);
+                    //Metadata.InputDictionary.Add(hIN);
+                }
+                catch { }
+            }
+            if (hexList.Count > 0 && !Metadata.InputDictionaryCollection.ContainsKey(HexaSetName))
+                Metadata.InputDictionaryCollection.Add(HexaSetName, hexList);
+        }
+
         private void Main_Load(object sender, EventArgs e)
         {
             try
             {
+                StartUp();
                 Logger.FormRef = this;
                 UpdateForm();
+                Process();
             }
             catch (Exception ex)
             {
@@ -248,27 +311,109 @@ namespace Denyo.ConnectionBridge.Client
 
         private void timer1_Tick_1(object sender, EventArgs e)
         {
-            if (!bInitAll)
-                InitAll();
+            try
+            {
+                if (DateTime.Now.Subtract(serialPortHandler.CmdSentTime).TotalMilliseconds > Metadata.TimerInterval && DateTime.Now.Subtract(serialPortHandler.CmdReceivedTime).TotalMilliseconds > Metadata.TimerInterval && !serialPortHandler._receiving)
+                {
+                    Process();
+                }
 
-            UpdateForm();
-            if (IsInternetConnected && IsServerConnected)
-            {
-                if (cmdCounter >= Metadata.InputDictionary.Count)
-                    cmdCounter = 0;
-                serialPortHandler.SendNextCommand(rdoHex.Checked ? Metadata.InputDictionary[cmdCounter].Hexa : Metadata.InputDictionary[cmdCounter].Name, rdoHex.Checked ? CommunicationMode.HEXA : CommunicationMode.TEXT);
+                /*
+                if (!bInitAll)
+                    InitAll();
+
+                //if(!allConnected)
+                //{
+                //    //// try reconnect
+                //    UpdateForm();
+                //    return;
+                //}
+
+                UpdateForm();
+                if (IsInternetConnected && IsServerConnected)
+                {
+                    if (cmdCounter >= Metadata.InputDictionary.Count)
+                        cmdCounter = 0;
+                    serialPortHandler.SendNextCommand(rdoHex.Checked ? Metadata.InputDictionary[cmdCounter].Hexa : Metadata.InputDictionary[cmdCounter].Name, rdoHex.Checked ? CommunicationMode.HEXA : CommunicationMode.TEXT);
+                }
+                else
+                {
+                    //Save in local
+                }
+                */
             }
-            else
+            catch (Exception ex)
             {
-                //Save in local
+                Logger.Log("Backup Timer Err " + ex.Message);
             }
         }
 
+        public void Process()
+        {
+            try
+            {
+                if (!bInitAll)
+                    InitAll();
+
+                UpdateForm();
+
+                //swap area
+                if (_swapRequired)
+                {
+                    Metadata.ActiveHexaSet = _swapTo;
+                    cmdCounter = 0;
+                    _InSwapLoop = true;
+                    _swapRequired = false;
+                    Logger.Log("SWAP LOOP ACTIVE. "+_swapTo);
+                    Logger.Log("ACTIVE DS " + Metadata.ActiveHexaSet);
+                    Logger.Log("Default DS " + Metadata.DefaultHexaSet);
+                }
+                if(_InSwapLoop && cmdCounter >= Metadata.InputDictionaryCollection[Metadata.ActiveHexaSet].Count)
+                {
+                    Logger.Log("SWAP LOOP " + _swapTo + " completed.");
+                    cmdCounter = 0;
+                    Metadata.ActiveHexaSet = Metadata.DefaultHexaSet;
+                    _InSwapLoop = false;
+                }
+
+                if (IsInternetConnected && tcpClientHandler.IsServerConnected && serialPortHandler.IsConnected)
+                {
+                    if (cmdCounter >= Metadata.InputDictionaryCollection[Metadata.ActiveHexaSet].Count)
+                        cmdCounter = 0;
+                    while (Metadata.InputDictionaryCollection[Metadata.ActiveHexaSet][cmdCounter].Name == "A" && lastAlarmValue < 1)
+                    {
+                        //Logger.Log("Skipping A" + cmdCounter);
+                        cmdCounter++;
+                        if (_InSwapLoop && cmdCounter >= Metadata.InputDictionaryCollection[Metadata.ActiveHexaSet].Count)
+                        {
+                            Logger.Log("A.SWAP LOOP " + _swapTo + " completed.");
+                            cmdCounter = 0;
+                            Metadata.ActiveHexaSet = Metadata.DefaultHexaSet;
+                            _InSwapLoop = false;
+                        }
+                        else if (cmdCounter >= Metadata.InputDictionaryCollection[Metadata.ActiveHexaSet].Count)
+                            cmdCounter = 0;
+                    }
+
+                    serialPortHandler.SendNextCommand(rdoHex.Checked ? Metadata.InputDictionaryCollection[Metadata.ActiveHexaSet][cmdCounter].Hexa : Metadata.InputDictionaryCollection[Metadata.ActiveHexaSet][cmdCounter].Name, rdoHex.Checked ? CommunicationMode.HEXA : CommunicationMode.TEXT);
+                }
+                else
+                {
+                    bInitAll = false;
+                    timer1.Enabled = true;
+                    //Save in local
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Log("Error while processing. " + ex.Message);
+            }
+        }
         private void InitAll()
         {
             try
             {
-                timer1.Enabled = false;
+                //timer1.Enabled = false;
 
                 InitializeMetaData();
 
@@ -282,7 +427,7 @@ namespace Denyo.ConnectionBridge.Client
 
                 timer1.Enabled = true;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Logger.Log("InitAll.Err " + ex.Message);
             }
@@ -294,33 +439,88 @@ namespace Denyo.ConnectionBridge.Client
             try
             {
                 IsInternetConnected = CheckForInternetConnection();
-                lblRemoteServer.Text = tcpClientHandler.ServerID + ((IsServerConnected) ? "(Connected)" : "(Not Connected)");
+                lblRemoteServer.Text = tcpClientHandler.ServerID + ((tcpClientHandler.IsServerConnected) ? "Connected" : "Not Connected");
                 lblInternet.Text = IsInternetConnected ? "Connected" : "Not Connected";
                 lblTimer.Text = timer1.Enabled ? "ON" : "OFF";
                 lblTime.Text = DateTime.Now.ToString();
-                lblHC.Text = Metadata.InputDictionary.Count.ToString();
+
+                foreach (var x in Metadata.InputDictionaryCollection.Keys)
+                {
+                    Logger.Log(x);
+                }
+                Logger.Log("active :" + Metadata.ActiveHexaSet);
+                lblHC.Text = Metadata.InputDictionaryCollection[Metadata.ActiveHexaSet].Count.ToString();
+                lblDevice.Text = Metadata.AppID + ((serialPortHandler.IsConnected) ? " Connected" : " Not Connected");
+
             }
-            catch(Exception e) { }
-        }
-        
-        public void SendManualCommand(string cmd)
-        {
-            serialPortHandler.SendManualCommand(cmd);
+            catch (Exception e) { }
         }
 
-        public void SaveResponse(string response)
+        public void SendManualCommand(string cmd)
         {
-            tcpClientHandler.SendMonitoringResponseToServer(response);
+            try
+            {
+                if (!string.IsNullOrEmpty(cmd) && cmd.IndexOf(':') > 0 && cmd.Split(':')[0] == "APPCMD")
+                {
+                    switch (cmd.Split(':')[1])
+                    {
+                        case "RESTART":
+                            Application.Restart();
+                            break;
+                        case "EXECUTE":
+                            if(!string.IsNullOrEmpty(cmd.Split(':')[2]) || Metadata.InputDictionaryCollection.ContainsKey(cmd.Split(':')[2]))
+                            {
+                                _swapTo = cmd.Split(':')[2];
+                                _swapRequired = true;
+                                Logger.Log("SWAP RECEIVED " + _swapTo);
+                            }
+                            else
+                            {
+                                Logger.Log("INVALID SWAP COMMAND PARAM.  Cmd: " + cmd);
+                                Logger.Log("Available SWAP Documents:");
+                                foreach(string ke in Metadata.InputDictionaryCollection.Keys)
+                                    Logger.Log(" > "+ke);
+                            }
+                            break;
+                    }
+                }
+                else
+                serialPortHandler.SendManualCommand(cmd);
+            }
+            catch (Exception ex)
+            {
+                Logger.Log("ManualCommandProcessing Error :" + ex.Message + " Cmd: " + cmd);
+            }
+        }
+
+        public void SaveResponse(string response, bool IsManualCommandResponse = false)
+        {
+            if (!string.IsNullOrEmpty(response) && response.Split(',')[1] == "ENGINESTATE" && (int.Parse(response.Split(',')[2]) < 2))
+            {
+                _swapTo = cmd.Split(':')[2];
+                _swapRequired = true;
+                Logger.Log("Engine is not running  " + _swapTo);
+            }
+            tcpClientHandler.SendMonitoringResponseToServer(response, IsManualCommandResponse);
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
             try
             {
-                tcpClientHandler.SendToServer_Manual(txtSend.Text);
-                txtSend.Clear();
+                //tcpClientHandler.SendToServer_Manual(txtSend.Text);
+                //txtSend.Clear();
+                try
+                {
+                    //Process();
+                    Clipboard.SetText(rtbDisplay.Text);
+                }
+                catch (Exception ex)
+                {
+
+                }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
 
             }
