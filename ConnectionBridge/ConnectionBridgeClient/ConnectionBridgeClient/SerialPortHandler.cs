@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Diagnostics;
 using System.IO.Ports;
 using System.Linq;
 using System.Text;
@@ -52,6 +53,8 @@ namespace Denyo.ConnectionBridge.Client
         public Queue<Tuple<string, CommunicationMode, bool, string>> SentQueue = new Queue<Tuple<string, CommunicationMode, bool, string>>();
 
         public bool IsConnected { get; set; }
+
+        Stopwatch RunHrWait = new Stopwatch();
 
         public SerialPortHandler(int BaudRate, int DataBits, StopBits StopBits, Parity Parity, string PortName)
         {
@@ -180,14 +183,14 @@ namespace Denyo.ConnectionBridge.Client
                     return;
                 else
                     cmd = cmd.Trim();
-                
+
                 /* //LR
                 if (Metadata.InputDictionaryCollection[Metadata.ActiveHexaSet].Count(X => X.Hexa == cmd) > 0)
                     UpdateLogWindow("sending cmd:" + Metadata.InputDictionaryCollection[Metadata.ActiveHexaSet].FirstOrDefault(x => x.Hexa == cmd).Name + " : " + cmd);
                 else
                     UpdateLogWindow("sending cmd:" + cmd);
                 */ //LR
-                
+
                 switch (CommandToSend.Item2)
                 {
                     case CommunicationMode.TEXT:
@@ -247,7 +250,7 @@ namespace Denyo.ConnectionBridge.Client
             {
                 var SentCmd = SentQueue.Dequeue();
                 _receiving = true;
-              //LR  UpdateLogWindow("DataReceiver:\n");
+                //LR  UpdateLogWindow("DataReceiver:\n");
 
                 GotResponseForPrevCmd = true;
                 if (!SentCmd.Item3)
@@ -270,32 +273,52 @@ namespace Denyo.ConnectionBridge.Client
 
                     case CommunicationMode.HEXA:
                         {
-                            int bytesToRead = serialPort.BytesToRead;
-                            while (bytesToRead  > 0)
+                            if (SentCmd.Item4.Split(',')[1] != "RUNNINGHR")
                             {
-                                byte[] buffer2 = new byte[bytesToRead];
-                                serialPort.Read(buffer2, 0, bytesToRead);
-                                CmdReceivedTime = DateTime.Now;
-                                response += ByteToHex(buffer2);
-                                if (SentCmd.Item4 == "A" || SentCmd.Item4 == "RUNNINGHR")
-                                    for (int j = 0; j <= 300000; j++) { }
-                                        //for (int j = 0; j <= 300000; j++) { /* give a small delay */ }
-                                 bytesToRead = serialPort.BytesToRead;
+                                int bytesToRead = serialPort.BytesToRead;
+                                while (bytesToRead > 0)
+                                {
+                                    byte[] buffer2 = new byte[bytesToRead];
+                                    serialPort.Read(buffer2, 0, bytesToRead);
+                                    CmdReceivedTime = DateTime.Now;
+                                    response += ByteToHex(buffer2);
+                                    if (SentCmd.Item4 == "A")
+                                        for (int j = 0; j <= 300000; j++) { }
+                                    //for (int j = 0; j <= 300000; j++) { /* give a small delay */ }
+                                    bytesToRead = serialPort.BytesToRead;
+                                }
                             }
+                            else
+                            {
+                                int bytesToRead = serialPort.BytesToRead;
+                                RunHrWait.Start();
+                                while ((response.Trim().Split(" ".ToCharArray()).Length < 9 || bytesToRead > 0) && RunHrWait.ElapsedMilliseconds < 200)
+                                {
+                                    byte[] buffer2 = new byte[bytesToRead];
+                                    serialPort.Read(buffer2, 0, bytesToRead);
+                                    CmdReceivedTime = DateTime.Now;
+                                    response += ByteToHex(buffer2);
+                                    bytesToRead = serialPort.BytesToRead;
+                                }
+                                RunHrWait.Stop();
+                                //UpdateLogWindow("Waited for " + RunHrWait.ElapsedMilliseconds + ". Hex "+ response.Split(" ".ToCharArray()).Length );
+                                RunHrWait.Reset();
 
-                            
+                                                            }
                             break;
                         }
                 }
-                //FormRef.timer1.Enabled = false;
+
+                
                 if (!CommandSent)
                 {
                     UpdateLogWindow("[ Request: " + SentCmd.Item4 + " ][ Response: " + response + " ] [NOTSAVED][" + Main.cmdCounter.ToString() + "]");
                     return;
                 }// TO avoid saving response if a command is considered to be waited enough with no response
 
+
+                UpdateLogWindow("[ Request: " + SentCmd.Item4 + " ][ Response: " + response + " ][" + Main.cmdCounter.ToString() + "][" + SentQueue.Count + "]");
                 
-                UpdateLogWindow("[ Request: " + SentCmd.Item4 + " ][ Response: " + response + " ][" + Main.cmdCounter.ToString() + "]["+SentQueue.Count+"]");
                 SaveResponse(SentCmd.Item4 + "," + response, SentCmd.Item3);
 
                 //if(SentCmd.Item4.IndexOf("ENGINESTATE") > 0 && int.Parse(response) == 1)
@@ -303,7 +326,7 @@ namespace Denyo.ConnectionBridge.Client
 
                 //}
 
-                if(SentCmd.Item3)
+                if (SentCmd.Item3)
                 {
                     if (!FormRef.SwapRequired)
                     {
@@ -311,6 +334,8 @@ namespace Denyo.ConnectionBridge.Client
                         FormRef.SwapRequired = true;
                     }
                 }
+                
+
                 FormRef.Process();
             }
             catch (Exception ex)
