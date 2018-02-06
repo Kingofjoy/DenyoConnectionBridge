@@ -49,6 +49,8 @@ namespace Denyo.ConnectionBridge.Client
 
         public bool _receiving;
 
+        public Queue<Tuple<string, CommunicationMode, bool, string>> SentQueue = new Queue<Tuple<string, CommunicationMode, bool, string>>();
+
         public bool IsConnected { get; set; }
 
         public SerialPortHandler(int BaudRate, int DataBits, StopBits StopBits, Parity Parity, string PortName)
@@ -132,17 +134,24 @@ namespace Denyo.ConnectionBridge.Client
                 {
                     string mCmd = ManualCmdQueue.Dequeue();
                     UpdateLogWindow("Received Manual CMD:" + mCmd + "    *****");
-                    DataSender(mCmd, CommunicationMode.HEXA);
+
+                    DataSender(mCmd, CommunicationMode.HEXA,
+                        new Tuple<string, CommunicationMode, bool, string>(mCmd, CommunicationMode.HEXA, true, "Manual," +
+                                                   ((Metadata.InputDictionaryCollection[Metadata.ActiveHexaSet].Count(x => x.Hexa == mCmd) > 0) ? Metadata.InputDictionaryCollection[Metadata.ActiveHexaSet].FirstOrDefault(x => x.Hexa == mCmd).Name : mCmd))
+                                                   );
+
                     CurrentCmd = new Tuple<string, CommunicationMode, bool, string>(mCmd, CommunicationMode.HEXA, true, "Manual," +
                                                    ((Metadata.InputDictionaryCollection[Metadata.ActiveHexaSet].Count(x => x.Hexa == mCmd) > 0) ? Metadata.InputDictionaryCollection[Metadata.ActiveHexaSet].FirstOrDefault(x => x.Hexa == mCmd).Name : mCmd));
                     //to write logic to find names in alll list
                 }
                 else
                 {
-                    UpdateLogWindow("Auto cmd:\n");
+                    //LR UpdateLogWindow("Auto cmd:\n");
                     _isManualCmd = IsManulalCmd;
                     _mode = mode;
-                    DataSender(cmd, mode);
+                    DataSender(cmd, mode,
+                        new Tuple<string, CommunicationMode, bool, string>(cmd, mode, IsManulalCmd, Metadata.ActiveHexaSet + "," + Metadata.InputDictionaryCollection[Metadata.ActiveHexaSet].FirstOrDefault(x => x.Hexa == cmd).Name)
+                        );
                     CurrentCmd = new Tuple<string, CommunicationMode, bool, string>(cmd, mode, IsManulalCmd, Metadata.ActiveHexaSet + "," + Metadata.InputDictionaryCollection[Metadata.ActiveHexaSet].FirstOrDefault(x => x.Hexa == cmd).Name);
                 }
                 GotResponseForPrevCmd = false;
@@ -161,7 +170,7 @@ namespace Denyo.ConnectionBridge.Client
             //SendNextCommand(cmd, CommunicationMode.TEXT, true);
         }
 
-        private void DataSender(string cmd, CommunicationMode mode)
+        private void DataSender(string cmd, CommunicationMode mode, Tuple<string, CommunicationMode, bool, string> CommandToSend)
         {
             try
             {
@@ -171,26 +180,33 @@ namespace Denyo.ConnectionBridge.Client
                     return;
                 else
                     cmd = cmd.Trim();
+                
+                /* //LR
                 if (Metadata.InputDictionaryCollection[Metadata.ActiveHexaSet].Count(X => X.Hexa == cmd) > 0)
                     UpdateLogWindow("sending cmd:" + Metadata.InputDictionaryCollection[Metadata.ActiveHexaSet].FirstOrDefault(x => x.Hexa == cmd).Name + " : " + cmd);
                 else
                     UpdateLogWindow("sending cmd:" + cmd);
-
-                switch (mode)
+                */ //LR
+                
+                switch (CommandToSend.Item2)
                 {
                     case CommunicationMode.TEXT:
-                        serialPort.Write(cmd);
+                        serialPort.Write(CommandToSend.Item1);
                         CmdSentTime = DateTime.Now;
                         CommandSent = true;
+                        SentQueue.Enqueue(CommandToSend);
+                        UpdateLogWindow("Data Sent: " + CommandToSend.Item1 + " , " + CommandToSend.Item4);
                         break;
 
                     case CommunicationMode.HEXA:
                         try
                         {
-                            byte[] buffer = HexToByte(cmd);
+                            byte[] buffer = HexToByte(CommandToSend.Item1);
                             serialPort.Write(buffer, 0, buffer.Length);
                             CmdSentTime = DateTime.Now;
                             CommandSent = true;
+                            SentQueue.Enqueue(CommandToSend);
+                            UpdateLogWindow("Data Sent: " + CommandToSend.Item1 + " , " + CommandToSend.Item4);
                         }
                         catch (Exception ex)
                         {
@@ -229,18 +245,23 @@ namespace Denyo.ConnectionBridge.Client
         {
             try
             {
+                var SentCmd = SentQueue.Dequeue();
                 _receiving = true;
-                UpdateLogWindow("DataReceiver:\n");
+              //LR  UpdateLogWindow("DataReceiver:\n");
 
                 GotResponseForPrevCmd = true;
-                if (!CurrentCmd.Item3)
+                if (!SentCmd.Item3)
                 {
                     Main.cmdCounter++;
                 }
                 string response = string.Empty;
-                UpdateLogWindow("CommunicationMode:" + CurrentCmd.Item2 + "\n");
+                //LR  UpdateLogWindow("CommunicationMode:" + SentCmd.Item2 + "\n");
+                //if(SentCmd.Item4 == "A" || SentCmd.Item4 == "RUNNINGHR")
+                //    for (int j = 0; j <= 1000000; j++) { /* give a small delay */ }
+                //else
+                //    for (int j = 0; j <= 300000; j++) { /* give a small delay */ }
 
-                switch (CurrentCmd.Item2)
+                switch (SentCmd.Item2)
                 {
                     case CommunicationMode.TEXT:
                         response = serialPort.ReadExisting();
@@ -250,27 +271,46 @@ namespace Denyo.ConnectionBridge.Client
                     case CommunicationMode.HEXA:
                         {
                             int bytesToRead = serialPort.BytesToRead;
-                            byte[] buffer = new byte[bytesToRead];
-                            serialPort.Read(buffer, 0, bytesToRead);
-                            CmdReceivedTime = DateTime.Now;
-                            response = ByteToHex(buffer);
+                            while (bytesToRead  > 0)
+                            {
+                                byte[] buffer2 = new byte[bytesToRead];
+                                serialPort.Read(buffer2, 0, bytesToRead);
+                                CmdReceivedTime = DateTime.Now;
+                                response += ByteToHex(buffer2);
+                                if (SentCmd.Item4 == "A" || SentCmd.Item4 == "RUNNINGHR")
+                                    for (int j = 0; j <= 300000; j++) { }
+                                        //for (int j = 0; j <= 300000; j++) { /* give a small delay */ }
+                                 bytesToRead = serialPort.BytesToRead;
+                            }
+
+                            
                             break;
                         }
                 }
                 //FormRef.timer1.Enabled = false;
                 if (!CommandSent)
                 {
-                    UpdateLogWindow("[ Request: " + CurrentCmd.Item4 + " ][ Response: " + response + " ] [NOTSAVED][" + Main.cmdCounter.ToString() + "]");
+                    UpdateLogWindow("[ Request: " + SentCmd.Item4 + " ][ Response: " + response + " ] [NOTSAVED][" + Main.cmdCounter.ToString() + "]");
                     return;
                 }// TO avoid saving response if a command is considered to be waited enough with no response
 
-                UpdateLogWindow("[ Request: " + CurrentCmd.Item4 + " ][ Response: " + response + " ][" + Main.cmdCounter.ToString() + "]");
-                SaveResponse(CurrentCmd.Item4 + "," + response, CurrentCmd.Item3);
+                
+                UpdateLogWindow("[ Request: " + SentCmd.Item4 + " ][ Response: " + response + " ][" + Main.cmdCounter.ToString() + "]["+SentQueue.Count+"]");
+                SaveResponse(SentCmd.Item4 + "," + response, SentCmd.Item3);
 
-                //if(CurrentCmd.Item4.IndexOf("ENGINESTATE") > 0 && int.Parse(response) == 1)
+                //if(SentCmd.Item4.IndexOf("ENGINESTATE") > 0 && int.Parse(response) == 1)
                 //{
 
                 //}
+
+                if(SentCmd.Item3)
+                {
+                    if (!FormRef.SwapRequired)
+                    {
+                        FormRef.SwapTo = Metadata.ActiveHexaSet;
+                        FormRef.SwapRequired = true;
+                    }
+                }
                 FormRef.Process();
             }
             catch (Exception ex)
@@ -287,17 +327,17 @@ namespace Denyo.ConnectionBridge.Client
         {
             try
             {
-                strTmpRequest = response.Split(",".ToCharArray())[0];
+                strTmpRequest = response.Split(",".ToCharArray())[1];
                 if (strTmpRequest == "ALARMS")
                 {
-                    strTmpResponse = response.Split(",".ToCharArray())[1];
+                    strTmpResponse = response.Split(",".ToCharArray())[2];
                     strTmpResponse = DataStructures.Converter.HexaToString(strTmpResponse, strTmpRequest);
                     if (!int.TryParse(strTmpResponse, out Main.lastAlarmValue))
                         Main.lastAlarmValue = 0;
                 }
                 else if (strTmpRequest == "A")
                 {
-                    strTmpResponse = response.Split(",".ToCharArray())[1];
+                    strTmpResponse = response.Split(",".ToCharArray())[2];
                     strTmpResponse = DataStructures.Converter.HexaToString(strTmpResponse, strTmpRequest);
                     if (System.Text.RegularExpressions.Regex.IsMatch(strTmpResponse, @"^[a-zA-Z0-9 ]+$"))
                     {
@@ -320,7 +360,7 @@ namespace Denyo.ConnectionBridge.Client
             {
                 if (init)
                     FormRef.rtbDisplay.Clear();
-                FormRef.rtbDisplay.AppendText(DateTime.Now.ToString("DD HH:mm:ss:ffff") + log);
+                FormRef.rtbDisplay.AppendText(DateTime.Now.ToString("HH:mm:ss:ffff  > ") + log);
                 FormRef.rtbDisplay.AppendText(Environment.NewLine);
             }
             catch (Exception ex)

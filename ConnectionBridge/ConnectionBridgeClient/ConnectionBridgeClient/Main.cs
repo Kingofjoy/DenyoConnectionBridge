@@ -35,10 +35,11 @@ namespace Denyo.ConnectionBridge.Client
 
         private RegistryKey registryKey;
 
-        private bool _swapRequired;
+        public bool SwapRequired;
 
-        private string _swapTo;
+        public string SwapTo;
         private bool _InSwapLoop;
+        private bool _isEngineRunnging;
 
         public Main()
         {
@@ -126,7 +127,7 @@ namespace Denyo.ConnectionBridge.Client
         {
             try
             {
-                Logger.Log("SetPortNameValues");
+                //Logger.Log("SetPortNameValues");
                 SetPortNameValues(cboPort);
                 SetParityValues(cboParity);
                 SetStopBitValues(cboStop);
@@ -210,6 +211,8 @@ namespace Denyo.ConnectionBridge.Client
                 Metadata.TimerInterval = int.Parse(ConfigurationManager.AppSettings["LoopTime"]);
 
                 Metadata.DefaultHexaSet = ConfigurationManager.AppSettings["DefaultHexaSet"].ToUpper();
+
+                Metadata.IdleHexaSet = ConfigurationManager.AppSettings["IdleHexaSet"].ToUpper();
 
                 Metadata.ActiveHexaSet = Metadata.DefaultHexaSet;
 
@@ -315,6 +318,7 @@ namespace Denyo.ConnectionBridge.Client
             {
                 if (DateTime.Now.Subtract(serialPortHandler.CmdSentTime).TotalMilliseconds > Metadata.TimerInterval && DateTime.Now.Subtract(serialPortHandler.CmdReceivedTime).TotalMilliseconds > Metadata.TimerInterval && !serialPortHandler._receiving)
                 {
+                    serialPortHandler.SentQueue.Clear();
                     Process();
                 }
 
@@ -358,23 +362,29 @@ namespace Denyo.ConnectionBridge.Client
                 UpdateForm();
 
                 //swap area
-                if (_swapRequired)
+                if (SwapRequired)
                 {
-                    Metadata.ActiveHexaSet = _swapTo;
+                    Logger.Log("SWAP " + Metadata.ActiveHexaSet + " LOOP To " + SwapTo);
+                    Metadata.ActiveHexaSet = SwapTo;
                     cmdCounter = 0;
                     _InSwapLoop = true;
-                    _swapRequired = false;
-                    Logger.Log("SWAP LOOP ACTIVE. "+_swapTo);
-                    Logger.Log("ACTIVE DS " + Metadata.ActiveHexaSet);
-                    Logger.Log("Default DS " + Metadata.DefaultHexaSet);
+                    SwapRequired = false;
+                    //Logger.Log("ACTIVE DS " + Metadata.ActiveHexaSet);
+                    //Logger.Log("Default DS " + Metadata.DefaultHexaSet);
                 }
-                if(_InSwapLoop && cmdCounter >= Metadata.InputDictionaryCollection[Metadata.ActiveHexaSet].Count)
+                if (_InSwapLoop && cmdCounter >= Metadata.InputDictionaryCollection[Metadata.ActiveHexaSet].Count)
                 {
-                    Logger.Log("SWAP LOOP " + _swapTo + " completed.");
+                    //Logger.Log("SWAP LOOP " + _swapTo + " completed.");
                     cmdCounter = 0;
                     Metadata.ActiveHexaSet = Metadata.DefaultHexaSet;
                     _InSwapLoop = false;
                 }
+
+                //if (_isEngineRunnging && !_InSwapLoop && Metadata.ActiveHexaSet == Metadata.IdleHexaSet)
+                //{
+                //    cmdCounter = 0;
+                //    Metadata.ActiveHexaSet = Metadata.DefaultHexaSet;
+                //}
 
                 if (IsInternetConnected && tcpClientHandler.IsServerConnected && serialPortHandler.IsConnected)
                 {
@@ -386,7 +396,7 @@ namespace Denyo.ConnectionBridge.Client
                         cmdCounter++;
                         if (_InSwapLoop && cmdCounter >= Metadata.InputDictionaryCollection[Metadata.ActiveHexaSet].Count)
                         {
-                            Logger.Log("A.SWAP LOOP " + _swapTo + " completed.");
+                            //Logger.Log("A.SWAP LOOP " + _swapTo + " completed.");
                             cmdCounter = 0;
                             Metadata.ActiveHexaSet = Metadata.DefaultHexaSet;
                             _InSwapLoop = false;
@@ -444,11 +454,11 @@ namespace Denyo.ConnectionBridge.Client
                 lblTimer.Text = timer1.Enabled ? "ON" : "OFF";
                 lblTime.Text = DateTime.Now.ToString();
 
-                foreach (var x in Metadata.InputDictionaryCollection.Keys)
-                {
-                    Logger.Log(x);
-                }
-                Logger.Log("active :" + Metadata.ActiveHexaSet);
+                //foreach (var x in Metadata.InputDictionaryCollection.Keys)
+                //{
+                //    Logger.Log(x);
+                //}
+                //Logger.Log("active :" + Metadata.ActiveHexaSet);
                 lblHC.Text = Metadata.InputDictionaryCollection[Metadata.ActiveHexaSet].Count.ToString();
                 lblDevice.Text = Metadata.AppID + ((serialPortHandler.IsConnected) ? " Connected" : " Not Connected");
 
@@ -460,6 +470,7 @@ namespace Denyo.ConnectionBridge.Client
         {
             try
             {
+                Logger.Log("Manual command SendManualCommand : "+cmd);
                 if (!string.IsNullOrEmpty(cmd) && cmd.IndexOf(':') > 0 && cmd.Split(':')[0] == "APPCMD")
                 {
                     switch (cmd.Split(':')[1])
@@ -470,16 +481,16 @@ namespace Denyo.ConnectionBridge.Client
                         case "EXECUTE":
                             if(!string.IsNullOrEmpty(cmd.Split(':')[2]) || Metadata.InputDictionaryCollection.ContainsKey(cmd.Split(':')[2]))
                             {
-                                _swapTo = cmd.Split(':')[2];
-                                _swapRequired = true;
-                                Logger.Log("SWAP RECEIVED " + _swapTo);
+                                SwapTo = cmd.Split(':')[2];
+                                SwapRequired = true;
+                                //Logger.Log("SWAP RECEIVED " + _swapTo);
                             }
                             else
                             {
-                                Logger.Log("INVALID SWAP COMMAND PARAM.  Cmd: " + cmd);
-                                Logger.Log("Available SWAP Documents:");
-                                foreach(string ke in Metadata.InputDictionaryCollection.Keys)
-                                    Logger.Log(" > "+ke);
+                                //Logger.Log("INVALID SWAP COMMAND PARAM.  Cmd: " + cmd);
+                                //Logger.Log("Available SWAP Documents:");
+                                //foreach(string ke in Metadata.InputDictionaryCollection.Keys)
+                                //    Logger.Log(" > "+ke);
                             }
                             break;
                     }
@@ -495,12 +506,22 @@ namespace Denyo.ConnectionBridge.Client
 
         public void SaveResponse(string response, bool IsManualCommandResponse = false)
         {
-            if (!string.IsNullOrEmpty(response) && response.Split(',')[1] == "ENGINESTATE" && (int.Parse(response.Split(',')[2]) < 2))
-            {
-                _swapTo = cmd.Split(':')[2];
-                _swapRequired = true;
-                Logger.Log("Engine is not running  " + _swapTo);
-            }
+            //try {
+            //    if (!string.IsNullOrEmpty(response) && response.Split(',')[1] == "ENGINESTATE" && (int.Parse(response.Split(',')[2]) < 2) && Metadata.ActiveHexaSet != Metadata.IdleHexaSet)
+            //    {
+            //        _isEngineRunnging = false;
+            //        // Logger.Log("Engine is not running swap HexaSet To: " + _swapTo);
+            //    }
+            //    else if (!string.IsNullOrEmpty(response) && response.Split(',')[1] == "ENGINESTATE" && (int.Parse(response.Split(',')[2]) > 2) && Metadata.ActiveHexaSet == Metadata.IdleHexaSet)
+            //    {
+            //        _isEngineRunnging = true;
+            //        //Logger.Log("Engine is running swap HexaSet To: " + _swapTo);
+            //    }
+            //}
+            //catch(Exception ex)
+            //{
+
+            //}
             tcpClientHandler.SendMonitoringResponseToServer(response, IsManualCommandResponse);
         }
 

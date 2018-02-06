@@ -421,6 +421,7 @@ namespace Denyo.ConnectionBridge.Client
                     returndata= returndata.Replace("\0", "");
                     if (returndata.Length > 0)
                     {
+                        Logger.Log("ReceivedData*** " + returndata);
                         foreach (string oneData in returndata.Split("|".ToCharArray()))
                         {
                             try
@@ -580,7 +581,7 @@ namespace Denyo.ConnectionBridge.Client
                     ServerStream.Write(ByteData, 0, ByteData.Length);
                     ServerStream.Flush();
                     IsSent = true;
-                    Logger.Log(AppID + " : " + dpDataToSend.Message);
+                    //Logger.Log(AppID + " : " + dpDataToSend.Message);
                 }
                 else
                 {
