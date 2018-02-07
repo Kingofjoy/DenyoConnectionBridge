@@ -56,6 +56,9 @@ namespace Denyo.ConnectionBridge.Client
 
         Stopwatch RunHrWait = new Stopwatch();
 
+        string _receivedcmd = string.Empty;
+        int _minHexaLength = 0;
+
         public SerialPortHandler(int BaudRate, int DataBits, StopBits StopBits, Parity Parity, string PortName)
         {
             IsConnected = false;
@@ -273,7 +276,8 @@ namespace Denyo.ConnectionBridge.Client
 
                     case CommunicationMode.HEXA:
                         {
-                            if (SentCmd.Item4.Split(',')[1] != "RUNNINGHR")
+                            _receivedcmd = SentCmd.Item4.Split(',')[1];
+                            if (!(_receivedcmd == "RUNNINGHR" || _receivedcmd == "A")) //&& !SentCmd.Item3
                             {
                                 int bytesToRead = serialPort.BytesToRead;
                                 while (bytesToRead > 0)
@@ -290,9 +294,13 @@ namespace Denyo.ConnectionBridge.Client
                             }
                             else
                             {
+                                // For running hour and A, we will require / receive more hex pairs than usual
+                                // For manual commands also we are not sure about the return values so we wait for more pairs -- commented
                                 int bytesToRead = serialPort.BytesToRead;
+                                _minHexaLength = (_receivedcmd == "RUNNINGHR") ? 9 : 59; // || SentCmd.Item3
+
                                 RunHrWait.Start();
-                                while ((response.Trim().Split(" ".ToCharArray()).Length < 9 || bytesToRead > 0) && RunHrWait.ElapsedMilliseconds < 200)
+                                while ((response.Trim().Split(" ".ToCharArray()).Length < _minHexaLength || bytesToRead > 0) && RunHrWait.ElapsedMilliseconds < 200)
                                 {
                                     byte[] buffer2 = new byte[bytesToRead];
                                     serialPort.Read(buffer2, 0, bytesToRead);
@@ -301,7 +309,7 @@ namespace Denyo.ConnectionBridge.Client
                                     bytesToRead = serialPort.BytesToRead;
                                 }
                                 RunHrWait.Stop();
-                                //UpdateLogWindow("Waited for " + RunHrWait.ElapsedMilliseconds + ". Hex "+ response.Split(" ".ToCharArray()).Length );
+                                UpdateLogWindow("Waited for " + RunHrWait.ElapsedMilliseconds + ". Hex "+ response.Split(" ".ToCharArray()).Length );
                                 RunHrWait.Reset();
 
                                                             }

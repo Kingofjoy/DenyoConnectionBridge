@@ -72,6 +72,22 @@ namespace Denyo.ConnectionBridge.Server.TCPServer
             }
         }
 
+        public bool UpdateAlarms(string DeviceID, string AlarmValue, DateTime ReceivedDateTime)
+        {
+            bool status=false;
+            try
+            {
+                if (datamanger.UpdateAlarms(DeviceID, AlarmValue, ReceivedDateTime) > 0)
+                    status = true;
+              
+
+            }catch(Exception ex)
+            {
+                status = false;
+                Console.WriteLine("UpdateAlarms err:" + ex.Message);
+            }
+            return status;
+        }
         public bool UpdateAlarms(string DeviceID, List<string> Alarms)
         {
             string query = "";

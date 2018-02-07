@@ -778,7 +778,7 @@ namespace Denyo.ConnectionBridge.Server.TCPServer
                                 }
                                 else if (Input == "A")
                                 {
-                                    alarmHandler.AlarmUpdate(dpMsgReceived.SenderID, Output);
+                                    isSaved = alarmHandler.AlarmUpdate(dpMsgReceived.SenderID, Output,dpMsgReceived.TimeStamp);
                                 }
                                 else
                                 {

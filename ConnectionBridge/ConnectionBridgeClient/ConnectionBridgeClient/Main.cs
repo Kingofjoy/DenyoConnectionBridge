@@ -495,6 +495,35 @@ namespace Denyo.ConnectionBridge.Client
                             break;
                     }
                 }
+                else if(!string.IsNullOrEmpty(cmd) && cmd.IndexOf(':') > 0 && cmd.Split(':')[0] == "DEVCMD")
+                {
+                    switch (cmd.Split(':')[1])
+                    {
+                        case "START":
+                            {
+                                // 1 : 01 10 10 6F 00 02 04 01 FE 00 00 18 0b
+                                // 2 : 01 06 10 71 00 01 1c d1
+                                Logger.Log("ManualCommand START ENGINE");
+                                serialPortHandler.SendManualCommand("01 10 10 6F 00 02 04 01 FE 00 00 18 0b");
+                                serialPortHandler.SendManualCommand("01 06 10 71 00 01 1c d1");
+                            }
+                            break;
+                        case "STOP":
+                            {
+                                Logger.Log("ManualCommand STOP ENGINE");
+                                // 1 : 01 10 10 6f 00 02 04 02 fd 00 00 e8 4f
+                                // 2 : 01 06 10 71 00 01 1c d1
+                                serialPortHandler.SendManualCommand("01 10 10 6f 00 02 04 02 fd 00 00 e8 4f");
+                                serialPortHandler.SendManualCommand("01 06 10 71 00 01 1c d1");
+                            }
+                            break;
+                        default:
+                            {
+                                Logger.Log("ManualCommandProcessing Unable Q " + cmd);
+                            }
+                            break;
+                    }
+                }
                 else
                 serialPortHandler.SendManualCommand(cmd);
             }

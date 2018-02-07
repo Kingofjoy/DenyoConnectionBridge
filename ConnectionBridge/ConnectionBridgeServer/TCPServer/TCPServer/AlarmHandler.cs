@@ -26,25 +26,25 @@ namespace Denyo.ConnectionBridge.Server.TCPServer
         }
         
         // Update count
-        public bool AlarmMasterUpdate(string senderId, int output)
+        public bool AlarmMasterUpdate(string senderId, int alarmcount)
         {
             try
             {
-                int noOfAlarm;
+                int noOfAlarm; 
                 if(AlarmMaster.TryGetValue(senderId, out noOfAlarm))
                 {
-                    if(output != noOfAlarm)
-                    AlarmMaster[senderId] = output;
-                    if(output == 0)
-                    {
-                        List<string> dummylist = new List<string>();
-                        Alarams.TryRemove(senderId, out dummylist);
-                        dbInteraction.DeleteAlarms(senderId);
-                    }
+                    if(alarmcount != noOfAlarm)
+                    AlarmMaster[senderId] = alarmcount;
+                    //if(alarmcount == 0)
+                    //{
+                    //    List<string> dummylist = new List<string>();
+                    //    Alarams.TryRemove(senderId, out dummylist);
+                    //    dbInteraction.DeleteAlarms(senderId);
+                    //}
                 }
-                else if (output > 0)
+                else if (alarmcount > 0)
                 {
-                    AlarmMaster.TryAdd(senderId, output);
+                    AlarmMaster.TryAdd(senderId, alarmcount);
                 }
             }
             catch(Exception ex)
@@ -55,10 +55,29 @@ namespace Denyo.ConnectionBridge.Server.TCPServer
             return true;
         }
 
+        public bool AlarmUpdate(string senderId, string alarm,DateTime alarmReceivedTime)
+        {
+            try
+            {
+                if (System.Text.RegularExpressions.Regex.IsMatch(alarm, @"^[a-zA-Z0-9 ]+$"))
+                {
+                    return  dbInteraction.UpdateAlarms(senderId, alarm,alarmReceivedTime);
+                }
+                else
+                    Console.WriteLine("Alarm Update Skip, Junk value" + senderId + " : " + alarm);
+                return false;
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine("AlarmUpdate Error" + senderId + " : " + alarm);
+                return false;
+            }
+        }
         public void AlarmUpdate(string senderId, string output)
         {
             try
             {
+
                 int noOfAlarm;
                 if (AlarmMaster.TryGetValue(senderId, out noOfAlarm) && noOfAlarm > 0)
                 {
@@ -72,13 +91,13 @@ namespace Denyo.ConnectionBridge.Server.TCPServer
                             dbInteraction.UpdateAlarms(senderId, Alarams[senderId]);
                         }
                         else
-                        Console.WriteLine("Alarm Update Skip, Junk value"+senderId+ " : "+output);
+                            Console.WriteLine("Alarm Update Skip, Junk value" + senderId + " : " + output);
                     }
                 }
             }
             catch (Exception ex)
             {
-                //Logger.Log("AlarmUpdate Error:", ex);
+                Console.WriteLine("AlarmUpdate Error:" + ex);
             }
         }
 

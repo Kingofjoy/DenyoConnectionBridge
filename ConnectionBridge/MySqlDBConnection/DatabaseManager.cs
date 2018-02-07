@@ -199,5 +199,34 @@ namespace Denyo.ConnectionBridge.MySqlDBConnection
                 return -1;
             }
         }
+
+
+        public int UpdateAlarms(string DeviceID, string Alarm, DateTime ReceivedTime)
+        {
+            try
+            {
+                //Console.WriteLine("sp_UpdateAlarms");
+                using (MySqlConnection con = new MySqlConnection(ConnectionString))
+                {
+                    using (MySqlCommand cmd = new MySqlCommand("sp_UpdateAlarms", con))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.Parameters.Add(new MySqlParameter("@pUnit_Name", DeviceID));
+                        cmd.Parameters.Add(new MySqlParameter("@pAlarm_Name", Alarm));
+                        cmd.Parameters.Add(new MySqlParameter("@pReceived_Time", ReceivedTime));
+                        cmd.Parameters.Add(new MySqlParameter("@pRows_Affected", MySqlDbType.Int32));
+                        cmd.Parameters["@pRows_Affected"].Direction = ParameterDirection.Output;
+                        cmd.Connection.Open();
+                        cmd.ExecuteNonQuery();
+                        return (int)cmd.Parameters["@pRows_Affected"].Value;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("UpdateAlarms err:" + ex.Message);
+                return -1;
+            }
+        }
     }
 }
