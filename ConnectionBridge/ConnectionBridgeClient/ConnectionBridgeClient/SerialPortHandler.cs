@@ -58,6 +58,7 @@ namespace Denyo.ConnectionBridge.Client
 
         string _receivedcmd = string.Empty;
         int _minHexaLength = 0;
+        int _WaitTime = 50;
 
         public SerialPortHandler(int BaudRate, int DataBits, StopBits StopBits, Parity Parity, string PortName)
         {
@@ -277,42 +278,68 @@ namespace Denyo.ConnectionBridge.Client
                     case CommunicationMode.HEXA:
                         {
                             _receivedcmd = SentCmd.Item4.Split(',')[1];
-                            if (!(_receivedcmd == "RUNNINGHR" || _receivedcmd == "A")) //&& !SentCmd.Item3
+
+                            if (_receivedcmd == "RUNNINGHR")
                             {
-                                int bytesToRead = serialPort.BytesToRead;
-                                while (bytesToRead > 0)
-                                {
-                                    byte[] buffer2 = new byte[bytesToRead];
-                                    serialPort.Read(buffer2, 0, bytesToRead);
-                                    CmdReceivedTime = DateTime.Now;
-                                    response += ByteToHex(buffer2);
-                                    if (SentCmd.Item4 == "A")
-                                        for (int j = 0; j <= 300000; j++) { }
-                                    //for (int j = 0; j <= 300000; j++) { /* give a small delay */ }
-                                    bytesToRead = serialPort.BytesToRead;
-                                }
+                                _minHexaLength = 9;
+                                _WaitTime = 200;
+                            }
+                            else if (_receivedcmd == "A")
+                            {
+                                _minHexaLength = 59;
+                                _WaitTime = 200;
                             }
                             else
                             {
-                                // For running hour and A, we will require / receive more hex pairs than usual
-                                // For manual commands also we are not sure about the return values so we wait for more pairs -- commented
-                                int bytesToRead = serialPort.BytesToRead;
-                                _minHexaLength = (_receivedcmd == "RUNNINGHR") ? 9 : 59; // || SentCmd.Item3
+                                _minHexaLength = 7;
+                                _WaitTime = 50;
+                            }
 
-                                RunHrWait.Start();
-                                while ((response.Trim().Split(" ".ToCharArray()).Length < _minHexaLength || bytesToRead > 0) && RunHrWait.ElapsedMilliseconds < 200)
-                                {
-                                    byte[] buffer2 = new byte[bytesToRead];
-                                    serialPort.Read(buffer2, 0, bytesToRead);
-                                    CmdReceivedTime = DateTime.Now;
-                                    response += ByteToHex(buffer2);
-                                    bytesToRead = serialPort.BytesToRead;
-                                }
-                                RunHrWait.Stop();
-                                UpdateLogWindow("Waited for " + RunHrWait.ElapsedMilliseconds + ". Hex "+ response.Split(" ".ToCharArray()).Length );
-                                RunHrWait.Reset();
+                            int bytesToRead = serialPort.BytesToRead;
+                            RunHrWait.Restart();
+                            while ((response.Trim().Split(" ".ToCharArray()).Length < _minHexaLength || bytesToRead > 0) && RunHrWait.ElapsedMilliseconds < _WaitTime)
+                            {
+                                byte[] buffer2 = new byte[bytesToRead];
+                                serialPort.Read(buffer2, 0, bytesToRead);
+                                CmdReceivedTime = DateTime.Now;
+                                response += ByteToHex(buffer2);
+                                bytesToRead = serialPort.BytesToRead;
+                            }
+                            RunHrWait.Stop();
 
-                                                            }
+                            //if (!(_receivedcmd == "RUNNINGHR" || _receivedcmd == "A")) //&& !SentCmd.Item3
+                            //{
+                            //    int bytesToRead = serialPort.BytesToRead;
+                            //    while (bytesToRead > 0 || )
+                            //    {
+                            //        byte[] buffer2 = new byte[bytesToRead];
+                            //        serialPort.Read(buffer2, 0, bytesToRead);
+                            //        CmdReceivedTime = DateTime.Now;
+                            //        response += ByteToHex(buffer2);
+                            //        bytesToRead = serialPort.BytesToRead;
+                            //    }
+                            //}
+                            //else
+                            //{
+                            //    // For running hour and A, we will require / receive more hex pairs than usual
+                            //    // For manual commands also we are not sure about the return values so we wait for more pairs -- commented
+                            //    int bytesToRead = serialPort.BytesToRead;
+                            //    _minHexaLength = (_receivedcmd == "RUNNINGHR") ? 9 : 59; // || SentCmd.Item3
+
+                            //    RunHrWait.Start();
+                            //    while ((response.Trim().Split(" ".ToCharArray()).Length < _minHexaLength || bytesToRead > 0) && RunHrWait.ElapsedMilliseconds < 200)
+                            //    {
+                            //        byte[] buffer2 = new byte[bytesToRead];
+                            //        serialPort.Read(buffer2, 0, bytesToRead);
+                            //        CmdReceivedTime = DateTime.Now;
+                            //        response += ByteToHex(buffer2);
+                            //        bytesToRead = serialPort.BytesToRead;
+                            //    }
+                            //    RunHrWait.Stop();
+                            //    UpdateLogWindow("Waited for " + RunHrWait.ElapsedMilliseconds + ". Hex "+ response.Split(" ".ToCharArray()).Length );
+                            //    RunHrWait.Reset();
+
+                            //}
                             break;
                         }
                 }
@@ -325,7 +352,7 @@ namespace Denyo.ConnectionBridge.Client
                 }// TO avoid saving response if a command is considered to be waited enough with no response
 
 
-                UpdateLogWindow("[ Request: " + SentCmd.Item4 + " ][ Response: " + response + " ][" + Main.cmdCounter.ToString() + "][" + SentQueue.Count + "]");
+                UpdateLogWindow("[ Request: " + SentCmd.Item4 + " ][ Response: " + response + " ][" + Main.cmdCounter.ToString() + "][" + SentQueue.Count + "]["+ RunHrWait.ElapsedMilliseconds +"]");
                 
                 SaveResponse(SentCmd.Item4 + "," + response, SentCmd.Item3);
 

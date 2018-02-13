@@ -25,6 +25,8 @@ namespace Denyo.ConnectionBridge.Client
 
         private SerialPortHandler serialPortHandler;
 
+        private SerialPortHandler GPSserialPortHandler;
+
         public TcpClientHandler tcpClientHandler;
 
         public bool bInitAll;
@@ -38,8 +40,12 @@ namespace Denyo.ConnectionBridge.Client
         public bool SwapRequired;
 
         public string SwapTo;
+
         private bool _InSwapLoop;
-        private bool _isEngineRunnging;
+
+        private bool _IsEngineRunnging;
+
+        private bool _ExecuteGPS;
 
         public Main()
         {
@@ -146,8 +152,6 @@ namespace Denyo.ConnectionBridge.Client
             }
         }
 
-
-
         public void SetPortNameValues(ComboBox obj)
         {
             foreach (string str in SerialPort.GetPortNames())
@@ -204,6 +208,8 @@ namespace Denyo.ConnectionBridge.Client
 
                 Metadata.PreferredCOMPort = ConfigurationManager.AppSettings["LCPort"];
                 Metadata.PreferredBaudRate = ConfigurationManager.AppSettings["LCPBaud"];
+
+                Metadata.ATCOMPort = ConfigurationManager.AppSettings["ATPort"];
 
                 Metadata.ServerIP = ConfigurationManager.AppSettings["RServer"];
                 Metadata.ServerPort = int.Parse(ConfigurationManager.AppSettings["RSPort"]);
@@ -380,6 +386,11 @@ namespace Denyo.ConnectionBridge.Client
                     _InSwapLoop = false;
                 }
 
+                //if(_ExecuteGPS)
+                //{
+                //    ProcessGPSCommands();
+                //}
+
                 //if (_isEngineRunnging && !_InSwapLoop && Metadata.ActiveHexaSet == Metadata.IdleHexaSet)
                 //{
                 //    cmdCounter = 0;
@@ -404,8 +415,18 @@ namespace Denyo.ConnectionBridge.Client
                         else if (cmdCounter >= Metadata.InputDictionaryCollection[Metadata.ActiveHexaSet].Count)
                             cmdCounter = 0;
                     }
-
                     serialPortHandler.SendNextCommand(rdoHex.Checked ? Metadata.InputDictionaryCollection[Metadata.ActiveHexaSet][cmdCounter].Hexa : Metadata.InputDictionaryCollection[Metadata.ActiveHexaSet][cmdCounter].Name, rdoHex.Checked ? CommunicationMode.HEXA : CommunicationMode.TEXT);
+
+                    //if (!_ExecuteGPS)
+                    //{
+                    //    serialPortHandler.SendNextCommand(rdoHex.Checked ? Metadata.InputDictionaryCollection[Metadata.ActiveHexaSet][cmdCounter].Hexa : Metadata.InputDictionaryCollection[Metadata.ActiveHexaSet][cmdCounter].Name, rdoHex.Checked ? CommunicationMode.HEXA : CommunicationMode.TEXT);
+                    //}
+                    //else
+                    //{
+                    //    GPSserialPortHandler.SendNextCommand(rdoHex.Checked ? Metadata.InputDictionaryCollection[Metadata.ActiveHexaSet][cmdCounter].Hexa : Metadata.InputDictionaryCollection[Metadata.ActiveHexaSet][cmdCounter].Name, rdoHex.Checked ? CommunicationMode.HEXA : CommunicationMode.TEXT);
+                    //    if (cmdCounter >= Metadata.InputDictionaryCollection[Metadata.ActiveHexaSet].Count)
+                    //        _ExecuteGPS = false;
+                    //}
                 }
                 else
                 {
@@ -419,6 +440,36 @@ namespace Denyo.ConnectionBridge.Client
                 Logger.Log("Error while processing. " + ex.Message);
             }
         }
+
+        private void ProcessGPSCommands()
+        {
+            InitializeGPSSerialPort();
+
+        }
+
+        public void InitializeGPSSerialPort()
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(cboBaud.Text) || string.IsNullOrEmpty(cboData.Text) || string.IsNullOrEmpty(cboStop.Text) || string.IsNullOrEmpty(cboParity.Text) || string.IsNullOrEmpty(Metadata.ATCOMPort))
+                {
+                    MessageBox.Show("Unable to initialize GPS Serial Port");
+                    //Environment.Exit(1);
+                }
+                int baudRate = int.Parse(cboBaud.Text);
+                int dataBits = int.Parse(cboData.Text);
+                StopBits stopBits = (StopBits)Enum.Parse(typeof(StopBits), cboStop.Text);
+                Parity parity = (Parity)Enum.Parse(typeof(Parity), cboParity.Text);
+                string portName = Metadata.ATCOMPort;
+                GPSserialPortHandler = new SerialPortHandler(baudRate, dataBits, stopBits, parity, portName);
+                GPSserialPortHandler.FormRef = this;
+            }
+            catch (Exception INITSRER)
+            {
+                Logger.Log("Unable to initialize GPS Serial Port Err : " + INITSRER.Message);
+            }
+        }
+
         private void InitAll()
         {
             try
@@ -483,6 +534,10 @@ namespace Denyo.ConnectionBridge.Client
                             {
                                 SwapTo = cmd.Split(':')[2];
                                 SwapRequired = true;
+                                if(cmd.Split(':')[2] == "GPS")
+                                {
+                                    _ExecuteGPS = true;
+                                }
                                 //Logger.Log("SWAP RECEIVED " + _swapTo);
                             }
                             else

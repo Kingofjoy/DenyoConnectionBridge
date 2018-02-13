@@ -89,7 +89,7 @@ namespace Denyo.ConnectionBridge.DataStructures
 
                 string sHexSet;
 
-                sHexSet = string.Join("", hexapairs.Skip(8).Take(14));
+                sHexSet = string.Join("", hexapairs.Skip(8).Take(49));
 
                 byte[] data = new byte[sHexSet.Length / 2];
                 for (int i = 0; i < data.Length; i++)
@@ -97,6 +97,7 @@ namespace Denyo.ConnectionBridge.DataStructures
                     data[i] = Convert.ToByte(sHexSet.Substring(i * 2, 2), 16);
                 }
                 strValue = Encoding.ASCII.GetString(data).Replace("\0", "");
+                strValue = strValue.Trim();
                     //Console.WriteLine("strValue " + sHexSet1 + "HexNumber: " + strValue);
                
                     

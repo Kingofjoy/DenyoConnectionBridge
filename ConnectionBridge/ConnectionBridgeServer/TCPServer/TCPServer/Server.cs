@@ -85,6 +85,8 @@ namespace Denyo.ConnectionBridge.Server.TCPServer
 
         AlarmHandler alarmHandler = null;
 
+        int ParallelMessageProcessingLimit = 20;
+
         public Server(ref ConcurrentDictionary<string, ConcurrentQueue<DataPacket>> MessageQueuesRef)
         {
             InitTCPServer();
@@ -119,6 +121,8 @@ namespace Denyo.ConnectionBridge.Server.TCPServer
                 AuthToken = ConfigurationManager.AppSettings["AuthToken"];
 
                 _ListenerPort = int.Parse(ConfigurationManager.AppSettings["SLPort"]);
+
+                int.TryParse(ConfigurationManager.AppSettings["ParallelMessageProcessingLimit"],out ParallelMessageProcessingLimit);
 
                 NegotiateStageTime = new TimeSpan(0, 0, 0, 1, 200);
                 NegotiateTotalTime = new TimeSpan(0, 0, 1, 0);
@@ -767,6 +771,10 @@ namespace Denyo.ConnectionBridge.Server.TCPServer
                                 {
                                     isSaved = dbInteraction.UpdateSetPoints(dpMsgReceived.SenderID, Input.Split(':')[0], Input.Split(':')[1], Output, OutputHexa, dpMsgReceived.TimeStamp, "");
                                 }
+                                else if (InputClassification == "GPS")
+                                {
+
+                                }
                                 else if (Input == "ALARMS")
                                 {
                                     int noOfAlarm;
@@ -784,7 +792,7 @@ namespace Denyo.ConnectionBridge.Server.TCPServer
                                 {
                                     isSaved = dbInteraction.UpdateMonitoringStatus(dpMsgReceived.SenderID, Input, Output, OutputHexa, dpMsgReceived.TimeStamp);
                                 }
-                                Log(dpMsgReceived.SenderID + " > " + InputClassification + " > "+ Input + " : " + OutputHexa + " : " + Output + " DB: " + isSaved);
+                                Log(dpMsgReceived.SenderID + " > " + InputClassification + " > "+ Input + " : " + OutputHexa + " : " + Output + " DB: " + isSaved + " QC: "+ ReceivedMessages.Count);
 
                                 //if (!isSaved)
                                 //    //VT//Log(dpMsgReceived.SenderID + " > " + dpMsgReceived.Message.Split(",".ToCharArray())[0] + " : " + dpMsgReceived.Message.Split(",".ToCharArray())[1] + " DB: " + isSaved);
@@ -798,7 +806,7 @@ namespace Denyo.ConnectionBridge.Server.TCPServer
                     case PacketType.Request:
                     case PacketType.Response:
                         {
-                            Log("Transaction: From:" + dpMsgReceived.SenderID + " To:" + dpMsgReceived.RecepientID);
+                            Log("Transaction: From:" + dpMsgReceived.SenderID + " To:" + dpMsgReceived.RecepientID + " Data: " + dpMsgReceived.Message + " QC: "+ ReceivedMessages.Count);
                             if (Clients.Count(x => x.Key == dpMsgReceived.RecepientID) > 0)
                             {
                                 //PostMessages.Enqueue(dpMsgReceived);
@@ -840,23 +848,25 @@ namespace Denyo.ConnectionBridge.Server.TCPServer
                 while (ReceivedMessages.Count > 0)
                 {
                     watch.Start();
-                    int counter = 10;
+                    int counter = ParallelMessageProcessingLimit;
                     List<DataPacket> listOfDatapackets = new List<DataPacket>();
                     while (ReceivedMessages.Count > 0 && counter > 0)
                     {
                         DataPacket dpMsgReceived;
                         if (ReceivedMessages.TryDequeue(out dpMsgReceived))
                             listOfDatapackets.Add(dpMsgReceived);
+                        counter--;
                     }
                     watch.Stop();
-                    //Console.WriteLine("Dequeue " + listOfDatapackets.Count + " took " + watch.ElapsedMilliseconds + " ms from sourcecount " + ReceivedMessages.Count);
+                    Console.WriteLine("Dequeue " + listOfDatapackets.Count + " took " + watch.ElapsedMilliseconds + " ms from sourcecount " + ReceivedMessages.Count);
 
                     watch.Reset();
                     watch.Start();
                     //var rangePartitioner = Partitioner.Create(0, listOfDatapackets.Count);
-                    Parallel.ForEach(listOfDatapackets, (dp) => { ProcessOneMessage(dp); });
+                    Parallel.ForEach(listOfDatapackets, new ParallelOptions { MaxDegreeOfParallelism = -1 }, (dp) => { ProcessOneMessage(dp); });
                     watch.Stop();
-                    //Console.WriteLine(listOfDatapackets.Count + " execution took " + watch.ElapsedMilliseconds);
+                    Console.WriteLine(listOfDatapackets.Count + " execution took " + watch.ElapsedMilliseconds);
+                    watch.Reset();
                 }
 
 

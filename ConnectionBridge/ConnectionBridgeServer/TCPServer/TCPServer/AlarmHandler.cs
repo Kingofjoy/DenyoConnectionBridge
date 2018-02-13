@@ -12,12 +12,15 @@ namespace Denyo.ConnectionBridge.Server.TCPServer
         ConcurrentDictionary<string, int> AlarmMaster = new ConcurrentDictionary<string, int>();
         ConcurrentDictionary<string, List<string>> Alarams = new ConcurrentDictionary<string, List<string>>();
         DBInteractions dbInteraction;
+        private string strRegExFilter= @"^[a-zA-Z0-9* ]+$";
 
         public AlarmHandler()
         {
             try
             {
                 dbInteraction = new DBInteractions();
+                if(System.Configuration.ConfigurationManager.AppSettings["AlarmJunkFilter"]!=null || !string.IsNullOrEmpty(System.Configuration.ConfigurationManager.AppSettings["AlarmJunkFilter"]))
+                    strRegExFilter = System.Configuration.ConfigurationManager.AppSettings["AlarmJunkFilter"];
             }
             catch(Exception ex)
             {
@@ -59,7 +62,7 @@ namespace Denyo.ConnectionBridge.Server.TCPServer
         {
             try
             {
-                if (System.Text.RegularExpressions.Regex.IsMatch(alarm, @"^[a-zA-Z0-9 ]+$"))
+                if (System.Text.RegularExpressions.Regex.IsMatch(alarm, strRegExFilter))
                 {
                     return  dbInteraction.UpdateAlarms(senderId, alarm,alarmReceivedTime);
                 }
@@ -85,7 +88,7 @@ namespace Denyo.ConnectionBridge.Server.TCPServer
                         Alarams.TryAdd(senderId, new List<string>());
                     if (!string.IsNullOrEmpty(output) && !Alarams[senderId].Contains(output))
                     {
-                        if (System.Text.RegularExpressions.Regex.IsMatch(output, @"^[a-zA-Z0-9 ]+$"))
+                        if (System.Text.RegularExpressions.Regex.IsMatch(output, strRegExFilter))
                         {
                             Alarams[senderId].Add(output);
                             dbInteraction.UpdateAlarms(senderId, Alarams[senderId]);

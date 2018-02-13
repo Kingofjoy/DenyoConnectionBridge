@@ -27,6 +27,10 @@ namespace TestHost
             //DatabaseManager dbInteraction = new DatabaseManager();
             //dbInteraction.UpdateSetPoints("GEN0002", "VOLT", "EP", "70", "70", DateTime.Now, "APT");
 
+            //Console.WriteLine(System.Configuration.ConfigurationManager.AppSettings["AlarmJunkFilter"]);
+            //Console.WriteLine(System.Text.RegularExpressions.Regex.IsMatch(Converter.HexaToString("01 03 36 00 00 01 01 21 2A 57 72 6E 20 47 65 6E 65 72 61 74 6F 72 20 4C 31 4C 32 20 3C 20 56 6F 6C 74 61 67 65 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 9C 59", "A"), System.Configuration.ConfigurationManager.AppSettings["AlarmJunkFilter"])); 
+
+
             //Console.WriteLine(Denyo.ConnectionBridge.DataStructures.Converter.HexaToString("01 03 02 00 00 B8 44", "ENGSPEED"));
             //Console.WriteLine(Denyo.ConnectionBridge.DataStructures.Converter.HexaToString("01 03 02 02 11 79 28", "ENGSPEED"));
             //Console.WriteLine(Denyo.ConnectionBridge.DataStructures.Converter.HexaToString("01 03 02 06 31 7A 30", "ENGSPEED"));
