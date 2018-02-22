@@ -224,6 +224,7 @@ namespace Denyo.ConnectionBridge.Client
             // 
             this.rtbDisplay.Location = new System.Drawing.Point(9, 23);
             this.rtbDisplay.Margin = new System.Windows.Forms.Padding(4);
+            this.rtbDisplay.MaxLength = 100000;
             this.rtbDisplay.Name = "rtbDisplay";
             this.rtbDisplay.ReadOnly = true;
             this.rtbDisplay.Size = new System.Drawing.Size(723, 287);

@@ -165,5 +165,31 @@ namespace Denyo.ConnectionBridge.DataStructures
             }
             return strValue;
         }
+
+        /// <summary>
+        /// Standart Hex to String Implementation. For GPS Hex to String.
+        /// </summary>
+        /// <param name="hexString"></param>
+        /// <returns></returns>
+        public static string GPSHexaToString(string hexString)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(hexString)) return hexString;
+                hexString = hexString.Replace(" ", "");
+
+                var bytes = new byte[hexString.Length / 2];
+                for (var i = 0; i < bytes.Length; i++)
+                {
+                    bytes[i] = Convert.ToByte(hexString.Substring(i * 2, 2), 16);
+                }
+
+                return Encoding.Default.GetString(bytes);
+            }
+            catch(Exception ex)
+            {
+                return hexString;
+            }
+        }
     }
 }

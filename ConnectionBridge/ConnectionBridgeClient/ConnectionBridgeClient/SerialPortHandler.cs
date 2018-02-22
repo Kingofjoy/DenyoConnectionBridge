@@ -88,6 +88,10 @@ namespace Denyo.ConnectionBridge.Client
                 serialPort.BaudRate = _baudRate;
                 serialPort.DataBits = _dataBits;
                 serialPort.StopBits = _stopBits;
+
+                serialPort.DtrEnable = true;
+                serialPort.RtsEnable = true;
+
                 serialPort.Parity = _parity;
                 serialPort.PortName = _portName;
                 serialPort.Open();
@@ -422,8 +426,24 @@ namespace Denyo.ConnectionBridge.Client
                     FormRef.rtbDisplay.Clear();
                 FormRef.rtbDisplay.AppendText(DateTime.Now.ToString("HH:mm:ss:ffff  > ") + log);
                 FormRef.rtbDisplay.AppendText(Environment.NewLine);
+
             }
             catch (Exception ex)
+            {
+
+            }
+            
+            try
+            {
+                if (FormRef.rtbDisplay.TextLength > 100000)
+                {
+                    //FormRef.rtbDisplay.AppendText(DateTime.Now.ToString("HH:mm:ss:ffff  > ") + log + "{" + FormRef.rtbDisplay.TextLength + "}");
+                    FormRef.rtbDisplay.SelectAll();
+                    FormRef.rtbDisplay.Clear();
+                    FormRef.rtbDisplay.Text = DateTime.Now.ToString("HH:mm:ss:ffff  > ") + "Clear Disp";
+                }
+            }
+            catch(Exception ex)
             {
 
             }

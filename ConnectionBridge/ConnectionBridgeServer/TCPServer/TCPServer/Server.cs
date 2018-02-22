@@ -765,18 +765,30 @@ namespace Denyo.ConnectionBridge.Server.TCPServer
                                 //Log(dpMsgReceived.SenderID + " > " + dpMsgReceived.Message);
                                 InputClassification = dpMsgReceived.Message.Split(",".ToCharArray())[0];
                                 Input = dpMsgReceived.Message.Split(",".ToCharArray())[1];
-                                OutputHexa = dpMsgReceived.Message.Split(",".ToCharArray())[2];
-                                Output = Converter.HexaToString(OutputHexa, Input);
+                                
                                 if(InputClassification == "SETPOINTS")
                                 {
+                                    OutputHexa = dpMsgReceived.Message.Split(",".ToCharArray())[2];
+                                    Output = Converter.HexaToString(OutputHexa, Input);
                                     isSaved = dbInteraction.UpdateSetPoints(dpMsgReceived.SenderID, Input.Split(':')[0], Input.Split(':')[1], Output, OutputHexa, dpMsgReceived.TimeStamp, "");
                                 }
                                 else if (InputClassification == "GPS")
                                 {
+                                   
+                                    OutputHexa = dpMsgReceived.Message.Split(",".ToCharArray())[2];
+                                    Output = dpMsgReceived.Message.Split(",".ToCharArray())[2].Replace("~",",");
 
+                                    Console.WriteLine("M: " + dpMsgReceived.Message);
+                                    Console.WriteLine("I: " + Input);
+                                    Console.WriteLine("OH: " + OutputHexa);
+                                    Console.WriteLine("O: " + Output);
+
+                                    isSaved = dbInteraction.UpdateGPSStatus(dpMsgReceived.SenderID, Input, Output, OutputHexa, dpMsgReceived.TimeStamp);
                                 }
                                 else if (Input == "ALARMS")
                                 {
+                                    OutputHexa = dpMsgReceived.Message.Split(",".ToCharArray())[2];
+                                    Output = Converter.HexaToString(OutputHexa, Input);
                                     int noOfAlarm;
                                     if (int.TryParse(Output, out noOfAlarm))
                                     {
@@ -786,10 +798,14 @@ namespace Denyo.ConnectionBridge.Server.TCPServer
                                 }
                                 else if (Input == "A")
                                 {
+                                    OutputHexa = dpMsgReceived.Message.Split(",".ToCharArray())[2];
+                                    Output = Converter.HexaToString(OutputHexa, Input);
                                     isSaved = alarmHandler.AlarmUpdate(dpMsgReceived.SenderID, Output,dpMsgReceived.TimeStamp);
                                 }
                                 else
                                 {
+                                    OutputHexa = dpMsgReceived.Message.Split(",".ToCharArray())[2];
+                                    Output = Converter.HexaToString(OutputHexa, Input);
                                     isSaved = dbInteraction.UpdateMonitoringStatus(dpMsgReceived.SenderID, Input, Output, OutputHexa, dpMsgReceived.TimeStamp);
                                 }
                                 Log(dpMsgReceived.SenderID + " > " + InputClassification + " > "+ Input + " : " + OutputHexa + " : " + Output + " DB: " + isSaved + " QC: "+ ReceivedMessages.Count);

@@ -31,12 +31,17 @@ namespace Denyo.ConnectionBridge.Client
             {
                 if (!(FormRef == null))
                 {
-                    FormRef.rtbDisplay.AppendText(msg);
-                    FormRef.rtbDisplay.AppendText(Environment.NewLine);
-                    if(FormRef.rtbDisplay.TextLength>50000)
+                    if (FormRef.rtbDisplay.TextLength > 100000)
                     {
-                        FormRef.rtbDisplay.Text = FormRef.rtbDisplay.Text.Substring(FormRef.rtbDisplay.Text.IndexOf(Environment.NewLine, 0, 10));
+                        //FormRef.rtbDisplay.AppendText(DateTime.Now.ToString("HH:mm:ss:ffff  > ") + log + "{" + FormRef.rtbDisplay.TextLength + "}");
+                        FormRef.rtbDisplay.SelectAll();
+                        FormRef.rtbDisplay.Clear();
+                        FormRef.rtbDisplay.Text = DateTime.Now.ToString("HH:mm:ss:ffff  > ") + "Clear Disp" + Environment.NewLine;
                     }
+
+                    FormRef.rtbDisplay.AppendText(DateTime.Now.ToString("HH:mm:ss:ffff  > ") + msg);
+                    FormRef.rtbDisplay.AppendText(Environment.NewLine);
+                   
                     log.Debug(msg);
                 }
             }
@@ -45,10 +50,7 @@ namespace Denyo.ConnectionBridge.Client
 
             }
 
-            if (IsEnabled)
-            {
-
-            }
+          
         }
 
         public static void Log(string msg, Exception ex)
