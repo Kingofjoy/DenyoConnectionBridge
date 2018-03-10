@@ -329,7 +329,9 @@ namespace Denyo.ConnectionBridge.Client
                     Process();
                 }
 
-                if(DateTime.Now.Subtract(GPSserialPortHandler.CmdSentTime).TotalMinutes > int.Parse(ConfigurationManager.AppSettings["GPSTimerInMinute"]))
+                //Logger.Log("last sent:" + GPSserialPortHandler.CmdSentTime.ToString());
+                //Logger.Log("Diff:" + DateTime.Now.Subtract(GPSserialPortHandler.CmdSentTime).TotalMinutes);
+                if (DateTime.Now.Subtract(GPSserialPortHandler.CmdSentTime).TotalMinutes > int.Parse(ConfigurationManager.AppSettings["GPSTimerInMinute"]))
                 {
                     Logger.Log("GPS start: " + DateTime.Now);
                     ProcessGPSCommands();
@@ -385,6 +387,7 @@ namespace Denyo.ConnectionBridge.Client
             catch (Exception ex)
             { }
         }
+
         public void Process()
         {
             try
@@ -474,6 +477,7 @@ namespace Denyo.ConnectionBridge.Client
             {
                 GPSserialPortHandler = new GPSSerialPortHandler();
                 GPSserialPortHandler.FormRef = this;
+                Logger.Log("GPSserialPortHandler is initialized.");
             }
             catch (Exception ex)
             {
@@ -485,6 +489,10 @@ namespace Denyo.ConnectionBridge.Client
         {
             try
             {
+                if (!GPSserialPortHandler.IsConnected)
+                {
+                    InitializeGPSHandler();
+                }
                 if (GPSserialPortHandler.IsConnected)
                 {
                     GPSserialPortHandler.SendNextCommand(Metadata.InputDictionaryCollection["GPS"][GPSCmdCounter].Hexa, CommunicationMode.HEXA);

@@ -240,6 +240,7 @@ namespace Denyo.ConnectionBridge.Client
 
                 if (Main.GPSCmdCounter >= Metadata.InputDictionaryCollection["GPS"].Count)
                 {
+                    Main.GPSCmdCounter = 0;
                     UpdateLogWindow("[ Saving : " + "GPS," + response);
                     response = SentCmd.Item3 + "," + (response.Substring(response.IndexOf(":") + 2, response.IndexOf("OK") - response.IndexOf(":") - 6).Replace(",", "~"));
                     SaveGPSResponse(response);
