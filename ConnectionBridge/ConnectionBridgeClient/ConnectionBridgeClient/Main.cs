@@ -329,6 +329,12 @@ namespace Denyo.ConnectionBridge.Client
                     Process();
                 }
 
+                if(DateTime.Now.Subtract(GPSserialPortHandler.CmdSentTime).TotalMinutes > int.Parse(ConfigurationManager.AppSettings["GPSTimerInMinute"]))
+                {
+                    Logger.Log("GPS start: " + DateTime.Now);
+                    ProcessGPSCommands();
+                    Logger.Log("GPS end: " + DateTime.Now);
+                }
 
                 /*
                 if (!bInitAll)
@@ -514,6 +520,8 @@ namespace Denyo.ConnectionBridge.Client
 
                 InitializeSerialPort();
 
+                InitializeGPSHandler();
+
                 timer1.Enabled = true;
             }
             catch (Exception ex)
@@ -574,8 +582,6 @@ namespace Denyo.ConnectionBridge.Client
                             break;
                         case "GPS":
                             Logger.Log("GPS start: " + cmd);
-                            InitializeGPSHandler();
-                            Logger.Log("Initialize GPS Handler completed");
                             ProcessGPSCommands();
                             Logger.Log("GPS end: " + cmd);
                             break;
