@@ -749,6 +749,7 @@ namespace Denyo.ConnectionBridge.Server.TCPServer
         {
             try
             {
+                DBInteractions objdbInteraction = new DBInteractions();
                 //Log("ProcessOneMessage " + bMessageProcessorLoop + " Messages: " + ReceivedMessages.Count + " TID:" + Thread.CurrentThread.ManagedThreadId);
                 switch (dpMsgReceived.Type)
                 {
@@ -770,7 +771,8 @@ namespace Denyo.ConnectionBridge.Server.TCPServer
                                 {
                                     OutputHexa = dpMsgReceived.Message.Split(",".ToCharArray())[2];
                                     Output = Converter.HexaToString(OutputHexa, Input);
-                                    isSaved = dbInteraction.UpdateSetPoints(dpMsgReceived.SenderID, Input.Split(':')[0], Input.Split(':')[1], Output, OutputHexa, dpMsgReceived.TimeStamp, "");
+
+                                    isSaved = objdbInteraction.UpdateSetPoints(dpMsgReceived.SenderID, Input.Split(':')[0], Input.Split(':')[1], Output, OutputHexa, dpMsgReceived.TimeStamp, "");
                                 }
                                 else if (InputClassification == "GPS")
                                 {
@@ -783,7 +785,7 @@ namespace Denyo.ConnectionBridge.Server.TCPServer
                                     Console.WriteLine("OH: " + OutputHexa);
                                     Console.WriteLine("O: " + Output);
 
-                                    isSaved = dbInteraction.UpdateGPSStatus(dpMsgReceived.SenderID, Input, Output, OutputHexa, dpMsgReceived.TimeStamp);
+                                    isSaved = objdbInteraction.UpdateMonitoringStatus(dpMsgReceived.SenderID, Input, Output, OutputHexa, dpMsgReceived.TimeStamp);
                                 }
                                 else if (Input == "ALARMS")
                                 {
@@ -794,7 +796,7 @@ namespace Denyo.ConnectionBridge.Server.TCPServer
                                     {
                                         alarmHandler.AlarmMasterUpdate(dpMsgReceived.SenderID, noOfAlarm);
                                     }
-                                    isSaved = dbInteraction.UpdateMonitoringStatus(dpMsgReceived.SenderID, Input, Output, OutputHexa, dpMsgReceived.TimeStamp);
+                                    isSaved = objdbInteraction.UpdateMonitoringStatus(dpMsgReceived.SenderID, Input, Output, OutputHexa, dpMsgReceived.TimeStamp);
                                 }
                                 else if (Input == "A")
                                 {
@@ -806,7 +808,7 @@ namespace Denyo.ConnectionBridge.Server.TCPServer
                                 {
                                     OutputHexa = dpMsgReceived.Message.Split(",".ToCharArray())[2];
                                     Output = Converter.HexaToString(OutputHexa, Input);
-                                    isSaved = dbInteraction.UpdateMonitoringStatus(dpMsgReceived.SenderID, Input, Output, OutputHexa, dpMsgReceived.TimeStamp);
+                                    isSaved = objdbInteraction.UpdateMonitoringStatus(dpMsgReceived.SenderID, Input, Output, OutputHexa, dpMsgReceived.TimeStamp);
                                 }
                                 Log(dpMsgReceived.SenderID + " > " + InputClassification + " > "+ Input + " : " + OutputHexa + " : " + Output + " DB: " + isSaved + " QC: "+ ReceivedMessages.Count);
 
@@ -878,6 +880,7 @@ namespace Denyo.ConnectionBridge.Server.TCPServer
 
                     watch.Reset();
                     watch.Start();
+                    //ReceivedMessages.
                     //var rangePartitioner = Partitioner.Create(0, listOfDatapackets.Count);
                     Parallel.ForEach(listOfDatapackets, new ParallelOptions { MaxDegreeOfParallelism = -1 }, (dp) => { ProcessOneMessage(dp); });
                     watch.Stop();
