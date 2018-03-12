@@ -29,7 +29,7 @@ namespace Denyo.ConnectionBridge.Server.TCPServer
                 if (!(datamanger.ExecuteNonQuery(query) > 0))
                 {
                     query = @"INSERT INTO `unit_currentstatus` (`generatorid`, `code`, `value`, `actual_hexacode`, `timestamp`) 
-                            VALUES ('" + DeviceID + "', '" + Input + "', NULL, '" + Output + "', '" + UpdatedOn.ToString("yyyy-MM-dd H:mm:ss") + "');";
+                            VALUES ('" + DeviceID + "', '" + Input + "','"+ Output+ "', '" + OutputHexa + "', '" + UpdatedOn.ToString("yyyy-MM-dd H:mm:ss") + "');";
                     if (datamanger.ExecuteNonQuery(query) > 0)
                         return true;
                 }

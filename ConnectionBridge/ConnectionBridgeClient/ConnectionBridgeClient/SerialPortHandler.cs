@@ -206,7 +206,7 @@ namespace Denyo.ConnectionBridge.Client
                         CmdSentTime = DateTime.Now;
                         CommandSent = true;
                         SentQueue.Enqueue(CommandToSend);
-                        UpdateLogWindow("Data Sent: " + CommandToSend.Item1 + " , " + CommandToSend.Item4);
+                        UpdateLogWindow("Data Sent:T: " + CommandToSend.Item1 + " , " + CommandToSend.Item4);
                         break;
 
                     case CommunicationMode.HEXA:
@@ -217,7 +217,7 @@ namespace Denyo.ConnectionBridge.Client
                             CmdSentTime = DateTime.Now;
                             CommandSent = true;
                             SentQueue.Enqueue(CommandToSend);
-                            UpdateLogWindow("Data Sent: " + CommandToSend.Item1 + " , " + CommandToSend.Item4);
+                            UpdateLogWindow("Data Sent:H: " + CommandToSend.Item1 + " , " + CommandToSend.Item4);
                         }
                         catch (Exception ex)
                         {

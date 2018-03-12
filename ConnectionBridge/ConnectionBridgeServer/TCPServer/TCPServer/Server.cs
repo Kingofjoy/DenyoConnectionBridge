@@ -763,7 +763,7 @@ namespace Denyo.ConnectionBridge.Server.TCPServer
                             string Output = string.Empty;
                             try
                             {
-                                //Log(dpMsgReceived.SenderID + " > " + dpMsgReceived.Message);
+                                //Log("POM " +dpMsgReceived.SenderID + " > " + dpMsgReceived.Message);
                                 InputClassification = dpMsgReceived.Message.Split(",".ToCharArray())[0];
                                 Input = dpMsgReceived.Message.Split(",".ToCharArray())[1];
                                 
@@ -817,7 +817,8 @@ namespace Denyo.ConnectionBridge.Server.TCPServer
                             }
                             catch (Exception DBex)
                             {
-                                Log("ProcessOneMessage: Error saving MonitoringData [ " + dpMsgReceived.Message + "," + Output + ",] to DB: " + isSaved + " Err: " + DBex.Message);
+                                //Log("POM " +dpMsgReceived.SenderID + " > " + dpMsgReceived.Message);
+                                Log("ProcessOneMessage: Error saving MonitoringData [ " + dpMsgReceived.SenderID + " : " + dpMsgReceived.Message + "," + Output + ",] to DB: " + isSaved + " Err: " + DBex.Message);
                             }
                         }
                         break;
