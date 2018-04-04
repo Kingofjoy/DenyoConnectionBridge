@@ -58,13 +58,13 @@ namespace Denyo.ConnectionBridge.Server.TCPServer
             return true;
         }
 
-        public bool AlarmUpdate(string senderId, string alarm,DateTime alarmReceivedTime)
+        public bool AlarmUpdate(string senderId, string alarm,string alarmHex, DateTime alarmReceivedTime)
         {
             try
             {
                 if (System.Text.RegularExpressions.Regex.IsMatch(alarm, strRegExFilter))
                 {
-                    return  dbInteraction.UpdateAlarms(senderId, alarm,alarmReceivedTime);
+                    return  dbInteraction.UpdateAlarms(senderId, alarm, alarmHex,alarmReceivedTime);
                 }
                 else
                     Console.WriteLine("Alarm Update Skip, Junk value" + senderId + " : " + alarm);

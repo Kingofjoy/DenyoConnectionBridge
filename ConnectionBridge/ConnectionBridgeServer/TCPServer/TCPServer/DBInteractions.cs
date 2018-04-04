@@ -72,12 +72,12 @@ namespace Denyo.ConnectionBridge.Server.TCPServer
             }
         }
 
-        public bool UpdateAlarms(string DeviceID, string AlarmValue, DateTime ReceivedDateTime)
+        public bool UpdateAlarms(string DeviceID, string AlarmValue, string AlarmHex, DateTime ReceivedDateTime)
         {
             bool status=false;
             try
             {
-                if (datamanger.UpdateAlarms(DeviceID, AlarmValue, ReceivedDateTime) > 0)
+                if (datamanger.UpdateAlarms(DeviceID, AlarmValue, AlarmHex, ReceivedDateTime) > 0)
                     status = true;
               
 

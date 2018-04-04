@@ -802,7 +802,7 @@ namespace Denyo.ConnectionBridge.Server.TCPServer
                                 {
                                     OutputHexa = dpMsgReceived.Message.Split(",".ToCharArray())[2];
                                     Output = Converter.HexaToString(OutputHexa, Input);
-                                    isSaved = alarmHandler.AlarmUpdate(dpMsgReceived.SenderID, Output,dpMsgReceived.TimeStamp);
+                                    isSaved = alarmHandler.AlarmUpdate(dpMsgReceived.SenderID, Output, OutputHexa,dpMsgReceived.TimeStamp);
                                 }
                                 else
                                 {

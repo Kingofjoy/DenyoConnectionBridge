@@ -201,7 +201,7 @@ namespace Denyo.ConnectionBridge.MySqlDBConnection
         }
 
 
-        public int UpdateAlarms(string DeviceID, string Alarm, DateTime ReceivedTime)
+        public int UpdateAlarms(string DeviceID, string Alarm, string AlarmHex, DateTime ReceivedTime)
         {
             try
             {
@@ -215,6 +215,7 @@ namespace Denyo.ConnectionBridge.MySqlDBConnection
                         cmd.Parameters.Add(new MySqlParameter("@pAlarm_Name", Alarm));
                         cmd.Parameters.Add(new MySqlParameter("@pReceived_Time", ReceivedTime));
                         cmd.Parameters.Add(new MySqlParameter("@pRows_Affected", MySqlDbType.Int32));
+                        cmd.Parameters.Add(new MySqlParameter("@pAlarm_Hex", AlarmHex));
                         cmd.Parameters["@pRows_Affected"].Direction = ParameterDirection.Output;
                         cmd.Connection.Open();
                         cmd.ExecuteNonQuery();
