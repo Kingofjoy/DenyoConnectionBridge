@@ -43,6 +43,12 @@ namespace Denyo.ConnectionBridge.Client
 
         public bool IsServerConnected { get; set; }
 
+        List<DataPacket> _Memory = new List<DataPacket>();
+
+        Dictionary<string, DateTime> packetCache = new Dictionary<string, DateTime>();
+
+        int iTemp = 0;
+
         public TcpClientHandler()
         {
             try
@@ -520,13 +526,49 @@ namespace Denyo.ConnectionBridge.Client
                 deviceResponse.RecepientID = ServerID;
                 deviceResponse.RecepientType = AppType.Server;
 
-                if(!IsManualCommandResponse)
+                if (!IsManualCommandResponse)
                     deviceResponse.Type = PacketType.MonitoringData;
                 else
                     deviceResponse.Type = PacketType.Response;
 
                 deviceResponse.Message = response;
                 deviceResponse.TimeStamp = DateTime.Now;
+
+                #region Data Saver
+
+                if (Metadata.DataSaverEnabled)
+                {
+                    if (!deviceResponse.IsManualCmd && deviceResponse.Type == PacketType.MonitoringData)
+                    {
+                        for (iTemp = 0; iTemp < Metadata.DataSaverHexaSet.Count; iTemp++)
+                        {
+                            if (deviceResponse.Message.Contains(Metadata.DataSaverHexaSet[iTemp]))
+                            {
+                                if (packetCache.Keys.Contains(deviceResponse.Message))
+                                {
+                                    if ((deviceResponse.TimeStamp - packetCache[deviceResponse.Message]).TotalMinutes < Metadata.DataSaverCacheMinutes)
+                                    {
+                                        //Logger.Log("DSS : 1");
+                                        return;
+                                        // Skip sending data packet to server
+                                    }
+                                    else
+                                    {
+                                        //Logger.Log("DSS : 0");
+                                        packetCache[deviceResponse.Message] = deviceResponse.TimeStamp;
+                                    }
+                                }
+                                else
+                                {
+                                    packetCache[deviceResponse.Message] = deviceResponse.TimeStamp;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                #endregion
+
 
                 SendDataToServer(deviceResponse);
             }

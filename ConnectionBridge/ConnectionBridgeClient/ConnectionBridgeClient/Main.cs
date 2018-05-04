@@ -49,6 +49,8 @@ namespace Denyo.ConnectionBridge.Client
 
         private bool _ExecuteGPS;
 
+
+
         public Main()
         {
             InitializeComponent();
@@ -223,6 +225,13 @@ namespace Denyo.ConnectionBridge.Client
 
                 Metadata.ActiveHexaSet = Metadata.DefaultHexaSet;
 
+                Metadata.DataSaverEnabled = Convert.ToBoolean(ConfigurationManager.AppSettings["DataSaverEnabled"]);
+
+                string HexaCollection = ConfigurationManager.AppSettings["DataSaverHexaSets"];
+                foreach (string Hexa in HexaCollection.Split(",".ToCharArray()))
+                    Metadata.DataSaverHexaSet.Add(Hexa);
+
+                Metadata.DataSaverCacheMinutes = int.Parse(ConfigurationManager.AppSettings["DataSaverCacheMinutes"]);
             }
             catch (Exception imEx1)
             {
@@ -651,6 +660,8 @@ namespace Denyo.ConnectionBridge.Client
             //{
 
             //}
+
+            
             tcpClientHandler.SendMonitoringResponseToServer(response, IsManualCommandResponse);
         }
 

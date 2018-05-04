@@ -40,6 +40,10 @@ namespace Denyo.ConnectionBridge.Client
 
         public static List<HexaInput> SetPointDictionary = new List<HexaInput>();
 
+        public static bool DataSaverEnabled { get; set; }
+        public static List<string> DataSaverHexaSet { get; set; }
+
+        public static int DataSaverCacheMinutes { get; set; }
     }
 
     public enum CommunicationMode
