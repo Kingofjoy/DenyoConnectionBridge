@@ -228,14 +228,19 @@ namespace Denyo.ConnectionBridge.Client
                 Metadata.DataSaverEnabled = Convert.ToBoolean(ConfigurationManager.AppSettings["DataSaverEnabled"]);
 
                 string HexaCollection = ConfigurationManager.AppSettings["DataSaverHexaSets"];
+                Logger.Log("HexColl: " + HexaCollection);
+
+                Metadata.DataSaverHexaSet = new List<string>();
                 foreach (string Hexa in HexaCollection.Split(",".ToCharArray()))
-                    Metadata.DataSaverHexaSet.Add(Hexa);
+                    Metadata.DataSaverHexaSet.Add(Hexa.ToUpper());
+
+                Logger.Log("HS C:" + Metadata.DataSaverHexaSet.Count);
 
                 Metadata.DataSaverCacheMinutes = int.Parse(ConfigurationManager.AppSettings["DataSaverCacheMinutes"]);
             }
             catch (Exception imEx1)
             {
-
+                Logger.Log("InitializeMetaData Err : " + imEx1.Message);
             }
 
             try
@@ -311,8 +316,9 @@ namespace Denyo.ConnectionBridge.Client
         {
             try
             {
-                StartUp();
                 Logger.FormRef = this;
+                StartUp();
+               
                 UpdateForm();
                 Process();
             }

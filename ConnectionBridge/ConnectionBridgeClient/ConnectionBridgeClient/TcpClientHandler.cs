@@ -520,12 +520,14 @@ namespace Denyo.ConnectionBridge.Client
             {
                 DataPacket deviceResponse = new DataPacket();
 
+                //Logger.Log("SM S1");
                 deviceResponse.SenderID = AppID;
                 deviceResponse.SenderType = this.Type;
 
                 deviceResponse.RecepientID = ServerID;
                 deviceResponse.RecepientType = AppType.Server;
 
+                //Logger.Log("SM S2");
                 if (!IsManualCommandResponse)
                     deviceResponse.Type = PacketType.MonitoringData;
                 else
@@ -534,34 +536,45 @@ namespace Denyo.ConnectionBridge.Client
                 deviceResponse.Message = response;
                 deviceResponse.TimeStamp = DateTime.Now;
 
+                //Logger.Log("SM S3");
                 #region Data Saver
 
                 if (Metadata.DataSaverEnabled)
                 {
+                    //Logger.Log("SM S4");
                     if (!deviceResponse.IsManualCmd && deviceResponse.Type == PacketType.MonitoringData)
                     {
+                        //Logger.Log("SM S5");
                         for (iTemp = 0; iTemp < Metadata.DataSaverHexaSet.Count; iTemp++)
                         {
+                            //Logger.Log("SM S6");
                             if (deviceResponse.Message.Contains(Metadata.DataSaverHexaSet[iTemp]))
                             {
+                                //Logger.Log("SM S7");
                                 if (packetCache.Keys.Contains(deviceResponse.Message))
                                 {
+                                    //Logger.Log("SM S8");
                                     if ((deviceResponse.TimeStamp - packetCache[deviceResponse.Message]).TotalMinutes < Metadata.DataSaverCacheMinutes)
                                     {
-                                        //Logger.Log("DSS : 1");
+                                        Logger.Log("DataSend Skipped : True");
                                         return;
                                         // Skip sending data packet to server
                                     }
                                     else
                                     {
-                                        //Logger.Log("DSS : 0");
+                                        Logger.Log("DataSend Skipped : False");
                                         packetCache[deviceResponse.Message] = deviceResponse.TimeStamp;
                                     }
                                 }
                                 else
                                 {
+                                    //Logger.Log("SM S9");
                                     packetCache[deviceResponse.Message] = deviceResponse.TimeStamp;
                                 }
+                            }
+                            else
+                            {
+                                Logger.Log(Metadata.DataSaverHexaSet[iTemp] + " != " + deviceResponse.Message);
                             }
                         }
                     }
@@ -569,8 +582,9 @@ namespace Denyo.ConnectionBridge.Client
 
                 #endregion
 
-
+                //Logger.Log("SM S10");
                 SendDataToServer(deviceResponse);
+                //Logger.Log("SM S11");
             }
             catch(Exception ex)
             {
@@ -600,7 +614,7 @@ namespace Denyo.ConnectionBridge.Client
             }
             catch (Exception ex)
             {
-                Logger.Log("Unable to SendMonitoringResponseToServer " + ex.Message);
+                Logger.Log("Unable to SendMonitoringResponseToServer (M) " + ex.Message);
             }
 
         }
