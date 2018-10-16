@@ -27,6 +27,15 @@ namespace Denyo.ConnectionBridge.Client
 
         public static void Log(string msg)
         {
+            if (!IsEnabled) return;
+
+            try
+            {
+                log.Debug(msg);
+            }
+            catch
+            { }
+
             try
             {
                 if (!(FormRef == null))
@@ -42,10 +51,10 @@ namespace Denyo.ConnectionBridge.Client
                     FormRef.rtbDisplay.AppendText(DateTime.Now.ToString("HH:mm:ss:ffff  > ") + msg);
                     FormRef.rtbDisplay.AppendText(Environment.NewLine);
                    
-                    log.Debug(msg);
+                   
                 }
             }
-            catch (Exception ex)
+            catch
             {
 
             }
@@ -55,10 +64,33 @@ namespace Denyo.ConnectionBridge.Client
 
         public static void Log(string msg, Exception ex)
         {
-            if (IsEnabled)
+            try
             {
-                log.Error(msg, ex);
+                //if (IsEnabled)
+                {
+                    log.Error(msg, ex);
+                }
             }
+            catch { }
+        }
+
+        public static void LogFatal(string msg)
+        {
+            try
+            {
+                log.Fatal(msg);
+
+            }
+            catch { }
+        }
+
+        public static void LogFatal(string msg,Exception exc)
+        {
+            try
+            {
+                log.Fatal(msg,exc);
+            }
+            catch { }
         }
 
     }

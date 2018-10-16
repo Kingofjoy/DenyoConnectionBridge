@@ -63,6 +63,7 @@ namespace Denyo.ConnectionBridge.Client
         public SerialPortHandler(int BaudRate, int DataBits, StopBits StopBits, Parity Parity, string PortName)
         {
             IsConnected = false;
+
             serialPort = new SerialPort();
             _baudRate = BaudRate;
             _dataBits = DataBits;
@@ -74,12 +75,49 @@ namespace Denyo.ConnectionBridge.Client
             _mode = CommunicationMode.HEXA;
             ManualCmdQueue = new Queue<string>();
             OpenConnection();
+
+            //one more attempt based o real time observation to skip : Access to the port 'COM1' is denied. on error handled scenario
+
+            System.Threading.Thread.Sleep(1000);
+
+            if(!IsConnected)
+            {
+                try
+                {
+                    if(serialPort !=null && serialPort.BaseStream != null)
+                    { serialPort.BaseStream.Dispose(); }
+
+                }
+                catch { }
+
+                try
+                { serialPort.Dispose(); }
+                catch { }
+
+                try
+                {
+                    IsConnected = false;
+
+                    serialPort = new SerialPort();
+                    _baudRate = BaudRate;
+                    _dataBits = DataBits;
+                    _stopBits = StopBits;
+                    _parity = Parity;
+                    _portName = PortName;
+                    serialPort.DataReceived += new SerialDataReceivedEventHandler(DataReceiver);
+                    GotResponseForPrevCmd = true;
+                    _mode = CommunicationMode.HEXA;
+                    ManualCmdQueue = new Queue<string>();
+                    OpenConnection();
+                }
+                catch { }
+            }
         }
         private void OpenConnection()
         {
             try
             {
-                UpdateLogWindow("Serial Initialization");
+                Logger.Log("Serial Initialization");
 
                 if (serialPort.IsOpen)
                 {
@@ -96,12 +134,24 @@ namespace Denyo.ConnectionBridge.Client
                 serialPort.PortName = _portName;
                 serialPort.Open();
                 IsConnected = true;
+
+                Logger.Log("Serial Initialization Success");
             }
             catch (Exception ex)
             {
                 IsConnected = false;
-                UpdateLogWindow("Serial OpenConnection Err." + ex.Message);
-                throw;
+
+                Logger.Log("Serial OpenConnection Err." + ex.Message);
+                //throw;
+
+                try
+                {
+                    if (serialPort.IsOpen)
+                    {
+                        serialPort.Close();
+                    }
+                }
+                catch { }
             }
         }
 
@@ -116,7 +166,7 @@ namespace Denyo.ConnectionBridge.Client
                 }
                 //if (!GotResponseForPrevCmd)
                 //{
-                //    UpdateLogWindow("waiting for sending cmd:" + CurrentCmd.Item4 + "\n");
+                //    Logger.Log("waiting for sending cmd:" + CurrentCmd.Item4 + "\n");
                 //    waitCounter++;
                 //    if (waitCounter > int.Parse(ConfigurationManager.AppSettings["WaitCounter"]))
                 //    {
@@ -124,7 +174,7 @@ namespace Denyo.ConnectionBridge.Client
                 //        CommandSent = false;
                 //        waitCounter = 0;
                 //        GotResponseForPrevCmd = true;
-                //        UpdateLogWindow("Command Timed Out for the command:" + CurrentCmd.Item4 + " . Wait: " + waitCounter);
+                //        Logger.Log("Command Timed Out for the command:" + CurrentCmd.Item4 + " . Wait: " + waitCounter);
                 //        Logger.Log("Command Timed Out for the command:" + CurrentCmd.Item4, new Exception("TimedOut Exception"));
                 //        if (ManualCmdQueue.Count > 0 && CurrentCmd.Item3)
                 //        {
@@ -144,7 +194,7 @@ namespace Denyo.ConnectionBridge.Client
                 if (ManualCmdQueue.Count > 0)
                 {
                     string mCmd = ManualCmdQueue.Dequeue();
-                    UpdateLogWindow("Received Manual CMD:" + mCmd + "    *****");
+                    Logger.Log("Received Manual CMD:" + mCmd + "    *****");
 
                     DataSender(mCmd, CommunicationMode.HEXA,
                         new Tuple<string, CommunicationMode, bool, string>(mCmd, CommunicationMode.HEXA, true, "Manual," +
@@ -157,7 +207,7 @@ namespace Denyo.ConnectionBridge.Client
                 }
                 else
                 {
-                    //LR UpdateLogWindow("Auto cmd:\n");
+                    //LR Logger.Log("Auto cmd:\n");
                     _isManualCmd = IsManulalCmd;
                     _mode = mode;
                     DataSender(cmd, mode,
@@ -171,7 +221,7 @@ namespace Denyo.ConnectionBridge.Client
             }
             catch (Exception ex)
             {
-                UpdateLogWindow("SendNextCommand Err. " + ex.Message);
+                Logger.Log("SendNextCommand Err. " + ex.Message);
             }
         }
 
@@ -194,9 +244,9 @@ namespace Denyo.ConnectionBridge.Client
 
                 /* //LR
                 if (Metadata.InputDictionaryCollection[Metadata.ActiveHexaSet].Count(X => X.Hexa == cmd) > 0)
-                    UpdateLogWindow("sending cmd:" + Metadata.InputDictionaryCollection[Metadata.ActiveHexaSet].FirstOrDefault(x => x.Hexa == cmd).Name + " : " + cmd);
+                    Logger.Log("sending cmd:" + Metadata.InputDictionaryCollection[Metadata.ActiveHexaSet].FirstOrDefault(x => x.Hexa == cmd).Name + " : " + cmd);
                 else
-                    UpdateLogWindow("sending cmd:" + cmd);
+                    Logger.Log("sending cmd:" + cmd);
                 */ //LR
 
                 switch (CommandToSend.Item2)
@@ -206,7 +256,7 @@ namespace Denyo.ConnectionBridge.Client
                         CmdSentTime = DateTime.Now;
                         CommandSent = true;
                         SentQueue.Enqueue(CommandToSend);
-                        UpdateLogWindow("Data Sent:T: " + CommandToSend.Item1 + " , " + CommandToSend.Item4);
+                        Logger.Log("Data Sent:T: " + CommandToSend.Item1 + " , " + CommandToSend.Item4);
                         break;
 
                     case CommunicationMode.HEXA:
@@ -217,11 +267,11 @@ namespace Denyo.ConnectionBridge.Client
                             CmdSentTime = DateTime.Now;
                             CommandSent = true;
                             SentQueue.Enqueue(CommandToSend);
-                            UpdateLogWindow("Data Sent:H: " + CommandToSend.Item1 + " , " + CommandToSend.Item4);
+                            Logger.Log("Data Sent:H: " + CommandToSend.Item1 + " , " + CommandToSend.Item4);
                         }
                         catch (Exception ex)
                         {
-                            UpdateLogWindow("DataSender failed:" + ex.Message);
+                            Logger.Log("DataSender failed:" + ex.Message);
                             CommandSent = false;
                             Logger.Log("DataSender: Failed.", ex);
                             throw;
@@ -232,7 +282,7 @@ namespace Denyo.ConnectionBridge.Client
             }
             catch (Exception ex)
             {
-                UpdateLogWindow("DataSender Err" + ex.Message + " Data: " + (string.IsNullOrEmpty(cmd) ? " " : cmd));
+                Logger.Log("DataSender Err" + ex.Message + " Data: " + (string.IsNullOrEmpty(cmd) ? " " : cmd));
             }
             finally
             {
@@ -258,7 +308,7 @@ namespace Denyo.ConnectionBridge.Client
             {
                 var SentCmd = SentQueue.Dequeue();
                 _receiving = true;
-                //LR  UpdateLogWindow("DataReceiver:\n");
+                //LR  Logger.Log("DataReceiver:\n");
 
                 GotResponseForPrevCmd = true;
                 if (!SentCmd.Item3)
@@ -266,7 +316,7 @@ namespace Denyo.ConnectionBridge.Client
                     Main.cmdCounter++;
                 }
                 string response = string.Empty;
-                //LR  UpdateLogWindow("CommunicationMode:" + SentCmd.Item2 + "\n");
+                //LR  Logger.Log("CommunicationMode:" + SentCmd.Item2 + "\n");
                 //if(SentCmd.Item4 == "A" || SentCmd.Item4 == "RUNNINGHR")
                 //    for (int j = 0; j <= 1000000; j++) { /* give a small delay */ }
                 //else
@@ -340,7 +390,7 @@ namespace Denyo.ConnectionBridge.Client
                             //        bytesToRead = serialPort.BytesToRead;
                             //    }
                             //    RunHrWait.Stop();
-                            //    UpdateLogWindow("Waited for " + RunHrWait.ElapsedMilliseconds + ". Hex "+ response.Split(" ".ToCharArray()).Length );
+                            //    Logger.Log("Waited for " + RunHrWait.ElapsedMilliseconds + ". Hex "+ response.Split(" ".ToCharArray()).Length );
                             //    RunHrWait.Reset();
 
                             //}
@@ -351,12 +401,12 @@ namespace Denyo.ConnectionBridge.Client
                 
                 if (!CommandSent)
                 {
-                    UpdateLogWindow("[ Request: " + SentCmd.Item4 + " ][ Response: " + response + " ] [NOTSAVED][" + Main.cmdCounter.ToString() + "]");
+                    Logger.Log("[ Request: " + SentCmd.Item4 + " ][ Response: " + response + " ] [NOTSAVED][" + Main.cmdCounter.ToString() + "]");
                     return;
                 }// TO avoid saving response if a command is considered to be waited enough with no response
 
 
-                UpdateLogWindow("[ Request: " + SentCmd.Item4 + " ][ Response: " + response + " ][" + Main.cmdCounter.ToString() + "][" + SentQueue.Count + "]["+ RunHrWait.ElapsedMilliseconds +"]");
+                Logger.Log("[ Request: " + SentCmd.Item4 + " ][ Response: " + response + " ][" + Main.cmdCounter.ToString() + "][" + SentQueue.Count + "]["+ RunHrWait.ElapsedMilliseconds +"]");
                 
                 SaveResponse(SentCmd.Item4 + "," + response, SentCmd.Item3);
 
@@ -379,7 +429,7 @@ namespace Denyo.ConnectionBridge.Client
             }
             catch (Exception ex)
             {
-                UpdateLogWindow("Receiver Error:" + ex.Message + "\n");
+                Logger.Log("Receiver Error:" + ex.Message + "\n");
             }
             finally
             {
@@ -405,7 +455,7 @@ namespace Denyo.ConnectionBridge.Client
                     strTmpResponse = DataStructures.Converter.HexaToString(strTmpResponse, strTmpRequest);
                     if (System.Text.RegularExpressions.Regex.IsMatch(strTmpResponse, @"^[a-zA-Z0-9 ]+$"))
                     {
-                        UpdateLogWindow("*** ALARM : " + strTmpResponse + " ****");
+                        Logger.Log("*** ALARM : " + strTmpResponse + " ****");
                     }
                 }
 
@@ -413,7 +463,7 @@ namespace Denyo.ConnectionBridge.Client
             }
             catch (Exception aex)
             {
-                UpdateLogWindow("SaveResponse Error:" + aex.Message);
+                Logger.Log("SaveResponse Error:" + aex.Message);
             }
 
         }

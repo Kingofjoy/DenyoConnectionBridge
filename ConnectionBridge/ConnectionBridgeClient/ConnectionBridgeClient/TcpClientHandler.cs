@@ -556,13 +556,13 @@ namespace Denyo.ConnectionBridge.Client
                                     //Logger.Log("SM S8");
                                     if ((deviceResponse.TimeStamp - packetCache[deviceResponse.Message]).TotalMinutes < Metadata.DataSaverCacheMinutes)
                                     {
-                                        Logger.Log("DataSend Skipped : True");
+                                        //Logger.Log("DataSend Skipped : True");
                                         return;
                                         // Skip sending data packet to server
                                     }
                                     else
                                     {
-                                        Logger.Log("DataSend Skipped : False");
+                                        //Logger.Log("DataSend Skipped : False");
                                         packetCache[deviceResponse.Message] = deviceResponse.TimeStamp;
                                     }
                                 }

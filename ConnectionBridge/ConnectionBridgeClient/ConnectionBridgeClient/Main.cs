@@ -87,7 +87,8 @@ namespace Denyo.ConnectionBridge.Client
             {
                 if (string.IsNullOrEmpty(cboBaud.Text) || string.IsNullOrEmpty(cboData.Text) || string.IsNullOrEmpty(cboStop.Text) || string.IsNullOrEmpty(cboParity.Text) || string.IsNullOrEmpty(cboPort.Text))
                 {
-                    MessageBox.Show("Unable to initialize Serial Port");
+                    //MessageBox.Show("Unable to initialize Serial Port");
+                    Logger.Log("Unable to initialize Serial Port AVAILABLE_SETTINGS_ERR");
                     //Environment.Exit(1);
                 }
                 int baudRate = int.Parse(cboBaud.Text);
@@ -95,6 +96,7 @@ namespace Denyo.ConnectionBridge.Client
                 StopBits stopBits = (StopBits)Enum.Parse(typeof(StopBits), cboStop.Text);
                 Parity parity = (Parity)Enum.Parse(typeof(Parity), cboParity.Text);
                 string portName = cboPort.Text;
+
                 serialPortHandler = new SerialPortHandler(baudRate, dataBits, stopBits, parity, portName);
                 serialPortHandler.FormRef = this;
             }
@@ -315,10 +317,11 @@ namespace Denyo.ConnectionBridge.Client
         private void Main_Load(object sender, EventArgs e)
         {
             try
-            {
+            {  
                 Logger.FormRef = this;
+                Logger.Log("Connection Bridge Initiated");
+
                 StartUp();
-               
                 UpdateForm();
                 Process();
             }
@@ -326,10 +329,12 @@ namespace Denyo.ConnectionBridge.Client
             {
 
             }
+
         }
 
         private void cmdSend_Click_1(object sender, EventArgs e)
         {
+            //throw new Exception("User Excep");
             //timer1.Enabled = false;
             SendManualCommand(txtSend.Text);
         }

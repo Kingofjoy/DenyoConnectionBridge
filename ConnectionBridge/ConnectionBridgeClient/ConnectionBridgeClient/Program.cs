@@ -14,9 +14,63 @@ namespace Denyo.ConnectionBridge.Client
         [STAThread]
         static void Main()
         {
+            DateTime lastKnownExceptionTime = DateTime.Now;
+            
+
+            int ErrorRestarts = 0;
+            bool bFlag = false;
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Main());
+
+            while(ErrorRestarts<=5 && !bFlag)
+            {
+                try
+                {
+                    Logger.LogFatal("GLOBAL APP INIT");
+
+                    bFlag = true;
+                    Application.Run(new Main());
+
+                    Logger.LogFatal("GLOBAL APP EXIT");
+                }
+                catch(Exception glbExcept)
+                {
+                    bFlag = false;
+                    ErrorRestarts++;
+
+                    Logger.LogFatal("GLOBAL EXCEPTION", glbExcept);
+
+                    if (glbExcept.InnerException != null)
+                    {
+                        Logger.LogFatal("GLOBAL EXCEPTION-i", glbExcept.InnerException);
+                    }
+
+                    Logger.LogFatal("GLOBAL EXC"+ErrorRestarts);
+
+                    System.Threading.Thread.Sleep(5000);
+
+                    if((DateTime.Now-lastKnownExceptionTime).Hours >= 1)
+                    {
+                        Logger.LogFatal("GLOBAL ERRST" + ErrorRestarts);
+                        ErrorRestarts = 0;
+                    }
+
+                    lastKnownExceptionTime = DateTime.Now;
+
+                    if (ErrorRestarts > 5) throw glbExcept;
+
+                    try
+                    {
+                        GC.Collect();
+                    }
+                    catch { }
+                }
+            }
+
+            
         }
+
+        
     }
 }

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.23107.0
+# Visual Studio 15
+VisualStudioVersion = 15.0.28010.2003
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectionBridgeClient", "ConnectionBridgeClient\ConnectionBridgeClient\ConnectionBridgeClient.csproj", "{EE8D82CF-16DA-4D0D-B619-2D13AF2D0188}"
 EndProject
@@ -20,6 +20,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RefDlls", "RefDlls", "{D8BDAB34-ADA8-4A55-9173-7A597ED6BF48}"
 	ProjectSection(SolutionItems) = preProject
 		RefDlls\log4net.dll = RefDlls\log4net.dll
+		RefDlls\MySql.Data.dll = RefDlls\MySql.Data.dll
 		RefDlls\Newtonsoft.Json.dll = RefDlls\Newtonsoft.Json.dll
 	EndProjectSection
 EndProject
@@ -79,5 +80,8 @@ Global
 		{52D30C45-33C7-40F6-BDAC-4A0F27FCBDE2} = {3B22AA72-704A-4888-BA4C-A144FB3A9E1B}
 		{D32BA6C1-A167-4E95-ADF6-7C631981F167} = {3B22AA72-704A-4888-BA4C-A144FB3A9E1B}
 		{FBC16FF4-B529-4F6A-AFF7-E0E31FD069A1} = {3B22AA72-704A-4888-BA4C-A144FB3A9E1B}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {257C1847-53F9-4F91-80B8-BBFE184D8663}
 	EndGlobalSection
 EndGlobal

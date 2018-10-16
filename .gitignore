@@ -3,3 +3,12 @@
 ################################################################################
 
 /.vs
+/ConnectionBridge/.vs/ConnectionBridge/v15
+/ConnectionBridge/ConnectionBridgeClient/ConnectionBridgeClient/obj
+/ConnectionBridge/ConnectionBridgeClient/ConnectionBridgeClient/bin/Debug
+/ConnectionBridge/ConnectionBridgeClient/GPSTest/GPSTest
+/ConnectionBridge/ConnectionBridgeClient/TestClient
+/ConnectionBridge/ConnectionBridgeServer
+/ConnectionBridge/Framework
+/ConnectionBridge/MySqlDBConnection/obj
+/ConnectionBridge/MySqlDBConnection/bin/Debug
