@@ -261,7 +261,7 @@ namespace Denyo.ConnectionBridge.Client
                     }
                     catch (Exception ex)
                     {
-
+                        Logger.Log("Hexa Read Failed @ " + filePath + "E: " + ex.Message, ex);
                     }
                 }
 
@@ -318,7 +318,7 @@ namespace Denyo.ConnectionBridge.Client
         {
             try
             {  
-                Logger.FormRef = this;
+                //Logger.FormRef = this;
                 Logger.Log("Connection Bridge Initiated");
 
                 StartUp();
@@ -532,6 +532,7 @@ namespace Denyo.ConnectionBridge.Client
         {
             tcpClientHandler.SendMonitoringResponseToServer(response);
         }
+
         private void InitAll()
         {
             try

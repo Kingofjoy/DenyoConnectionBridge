@@ -38,20 +38,27 @@ namespace Denyo.ConnectionBridge.Client
 
             try
             {
-                if (!(FormRef == null))
+                if (ConfigurationManager.AppSettings["UI_ENABLED"] != null && ConfigurationManager.AppSettings["UI_ENABLED"].ToString().ToLower() == "true")
                 {
-                    if (FormRef.rtbDisplay.TextLength > 100000)
+                    if (!(FormRef == null))
                     {
-                        //FormRef.rtbDisplay.AppendText(DateTime.Now.ToString("HH:mm:ss:ffff  > ") + log + "{" + FormRef.rtbDisplay.TextLength + "}");
-                        FormRef.rtbDisplay.SelectAll();
-                        FormRef.rtbDisplay.Clear();
-                        FormRef.rtbDisplay.Text = DateTime.Now.ToString("HH:mm:ss:ffff  > ") + "Clear Disp" + Environment.NewLine;
-                    }
+                        if (FormRef.rtbDisplay.TextLength > 100000)
+                        {
+                            //FormRef.rtbDisplay.AppendText(DateTime.Now.ToString("HH:mm:ss:ffff  > ") + log + "{" + FormRef.rtbDisplay.TextLength + "}");
+                            FormRef.rtbDisplay.SelectAll();
+                            FormRef.rtbDisplay.Clear();
+                            FormRef.rtbDisplay.Text = DateTime.Now.ToString("HH:mm:ss:ffff  > ") + "Clear Disp" + Environment.NewLine;
+                        }
 
-                    FormRef.rtbDisplay.AppendText(DateTime.Now.ToString("HH:mm:ss:ffff  > ") + msg);
-                    FormRef.rtbDisplay.AppendText(Environment.NewLine);
-                   
-                   
+                        FormRef.rtbDisplay.AppendText(DateTime.Now.ToString("HH:mm:ss:ffff  > ") + msg);
+                        FormRef.rtbDisplay.AppendText(Environment.NewLine);
+
+
+                    }
+                }
+                else
+                {
+                    Main_noUI.LASTLOG = DateTime.Now.ToString("HH:mm:ss:ffff  > ") + msg;
                 }
             }
             catch
@@ -59,11 +66,18 @@ namespace Denyo.ConnectionBridge.Client
 
             }
 
-          
+            try
+            {
+                Console.WriteLine(msg);
+            }
+            catch
+            { }
+
         }
 
         public static void Log(string msg, Exception ex)
         {
+
             try
             {
                 //if (IsEnabled)
@@ -72,6 +86,45 @@ namespace Denyo.ConnectionBridge.Client
                 }
             }
             catch { }
+
+            try
+            {
+                if (ConfigurationManager.AppSettings["UI_ENABLED"] != null && ConfigurationManager.AppSettings["UI_ENABLED"].ToString().ToLower() == "true")
+                {
+                    if (!(FormRef == null))
+                    {
+                        if (FormRef.rtbDisplay.TextLength > 100000)
+                        {
+                            //FormRef.rtbDisplay.AppendText(DateTime.Now.ToString("HH:mm:ss:ffff  > ") + log + "{" + FormRef.rtbDisplay.TextLength + "}");
+                            FormRef.rtbDisplay.SelectAll();
+                            FormRef.rtbDisplay.Clear();
+                            FormRef.rtbDisplay.Text = DateTime.Now.ToString("HH:mm:ss:ffff  > ") + "Clear Disp" + Environment.NewLine;
+                        }
+
+                        FormRef.rtbDisplay.AppendText(DateTime.Now.ToString("HH:mm:ss:ffff  > ") + msg);
+                        FormRef.rtbDisplay.AppendText(DateTime.Now.ToString("HH:mm:ss:ffff  > ") + ex.Message);
+                        FormRef.rtbDisplay.AppendText(Environment.NewLine);
+
+
+                    }
+                }
+                else
+                {
+                    Main_noUI.LASTLOG = DateTime.Now.ToString("HH:mm:ss:ffff  > ") + msg + " [" + ex.Message + "] ";
+                }
+            }
+            catch { }
+
+            try
+            {
+                Console.WriteLine(DateTime.Now.ToString("HH:mm:ss:ffff  > ") + msg);
+                Console.WriteLine(DateTime.Now.ToString("HH:mm:ss:ffff  > ") + ex.Message);
+            }
+            catch
+            {
+
+            }
+
         }
 
         public static void LogFatal(string msg)
@@ -82,15 +135,89 @@ namespace Denyo.ConnectionBridge.Client
 
             }
             catch { }
+
+            try
+            {
+                if (ConfigurationManager.AppSettings["UI_ENABLED"] != null && ConfigurationManager.AppSettings["UI_ENABLED"].ToString().ToLower() == "true")
+                {
+                    if (!(FormRef == null))
+                    {
+                        if (FormRef.rtbDisplay.TextLength > 100000)
+                        {
+                            //FormRef.rtbDisplay.AppendText(DateTime.Now.ToString("HH:mm:ss:ffff  > ") + log + "{" + FormRef.rtbDisplay.TextLength + "}");
+                            FormRef.rtbDisplay.SelectAll();
+                            FormRef.rtbDisplay.Clear();
+                            FormRef.rtbDisplay.Text = DateTime.Now.ToString("HH:mm:ss:ffff  > ") + "Clear Disp" + Environment.NewLine;
+                        }
+
+                        FormRef.rtbDisplay.AppendText(DateTime.Now.ToString("HH:mm:ss:ffff  > ") + msg);
+                        FormRef.rtbDisplay.AppendText(Environment.NewLine);
+
+
+                    }
+                }
+                else
+                {
+                    Main_noUI.LASTLOG = DateTime.Now.ToString("HH:mm:ss:ffff  > ") + msg;
+                }
+            }
+            catch { }
+
+            try
+            {
+                Console.WriteLine(DateTime.Now.ToString("HH:mm:ss:ffff  > ") + msg);
+            }
+            catch
+            {
+
+            }
         }
 
-        public static void LogFatal(string msg,Exception exc)
+        public static void LogFatal(string msg, Exception exc)
         {
             try
             {
-                log.Fatal(msg,exc);
+                log.Fatal(msg, exc);
             }
             catch { }
+
+            try
+            {
+                if (ConfigurationManager.AppSettings["UI_ENABLED"] != null && ConfigurationManager.AppSettings["UI_ENABLED"].ToString().ToLower() == "true")
+                {
+                    if (!(FormRef == null))
+                    {
+                        if (FormRef.rtbDisplay.TextLength > 100000)
+                        {
+                            //FormRef.rtbDisplay.AppendText(DateTime.Now.ToString("HH:mm:ss:ffff  > ") + log + "{" + FormRef.rtbDisplay.TextLength + "}");
+                            FormRef.rtbDisplay.SelectAll();
+                            FormRef.rtbDisplay.Clear();
+                            FormRef.rtbDisplay.Text = DateTime.Now.ToString("HH:mm:ss:ffff  > ") + "Clear Disp" + Environment.NewLine;
+                        }
+
+                        FormRef.rtbDisplay.AppendText(DateTime.Now.ToString("HH:mm:ss:ffff  > ") + msg);
+                        FormRef.rtbDisplay.AppendText(DateTime.Now.ToString("HH:mm:ss:ffff  > ") + exc.Message);
+                        FormRef.rtbDisplay.AppendText(Environment.NewLine);
+
+
+                    }
+                }
+                else
+                {
+                    Main_noUI.LASTLOG = DateTime.Now.ToString("HH:mm:ss:ffff  > ") + msg + " [" + exc.Message + "] ";
+                }
+            }
+            catch { }
+
+            try
+            {
+                Console.WriteLine(DateTime.Now.ToString("HH:mm:ss:ffff  > ") + msg);
+                Console.WriteLine(DateTime.Now.ToString("HH:mm:ss:ffff  > ") + exc.Message);
+            }
+            catch
+            {
+
+            }
         }
 
     }

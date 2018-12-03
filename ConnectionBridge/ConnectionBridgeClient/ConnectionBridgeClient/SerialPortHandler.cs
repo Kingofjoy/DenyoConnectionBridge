@@ -113,6 +113,38 @@ namespace Denyo.ConnectionBridge.Client
                 catch { }
             }
         }
+
+        public void StopAll()
+        {
+            try
+            {
+                if (serialPort !=null && serialPort.IsOpen)
+                {
+                    serialPort.Close();
+                }
+
+                serialPort.DataReceived -= DataReceiver;
+            }
+            catch(Exception ex1)
+            {
+                Logger.Log("Serial StopAll " + ex1.Message);
+            }
+
+            try
+            {
+                if (serialPort != null)
+                {
+                    serialPort.Dispose();
+                    serialPort = null;
+                }
+            }catch(Exception ex2)
+            {
+                Logger.Log("Serial StopAll " + ex2.Message);
+            }
+
+            Logger.Log("Serial Ported actions stopped");
+        }
+
         private void OpenConnection()
         {
             try
@@ -313,7 +345,10 @@ namespace Denyo.ConnectionBridge.Client
                 GotResponseForPrevCmd = true;
                 if (!SentCmd.Item3)
                 {
-                    Main.cmdCounter++;
+                    if (ConfigurationManager.AppSettings["UI_ENABLED"] != null && ConfigurationManager.AppSettings["UI_ENABLED"].ToString().ToLower() == "true")
+                        Main.cmdCounter++;
+                    else
+                        Main_noUI.cmdCounter++;
                 }
                 string response = string.Empty;
                 //LR  Logger.Log("CommunicationMode:" + SentCmd.Item2 + "\n");
@@ -401,13 +436,22 @@ namespace Denyo.ConnectionBridge.Client
                 
                 if (!CommandSent)
                 {
-                    Logger.Log("[ Request: " + SentCmd.Item4 + " ][ Response: " + response + " ] [NOTSAVED][" + Main.cmdCounter.ToString() + "]");
+                    if (ConfigurationManager.AppSettings["UI_ENABLED"] != null && ConfigurationManager.AppSettings["UI_ENABLED"].ToString().ToLower() == "true")
+                        Logger.Log("[ Request: " + SentCmd.Item4 + " ][ Response: " + response + " ] [NOTSAVED][" + Main.cmdCounter.ToString() + "]");
+                    else
+                        Logger.Log("[ Request: " + SentCmd.Item4 + " ][ Response: " + response + " ] [NOTSAVED][" + Main_noUI.cmdCounter.ToString() + "]");
+
                     return;
                 }// TO avoid saving response if a command is considered to be waited enough with no response
 
 
-                Logger.Log("[ Request: " + SentCmd.Item4 + " ][ Response: " + response + " ][" + Main.cmdCounter.ToString() + "][" + SentQueue.Count + "]["+ RunHrWait.ElapsedMilliseconds +"]");
-                
+                if (ConfigurationManager.AppSettings["UI_ENABLED"] != null && ConfigurationManager.AppSettings["UI_ENABLED"].ToString().ToLower() == "true")
+                    Logger.Log("[ Request: " + SentCmd.Item4 + " ][ Response: " + response + " ][" + Main.cmdCounter.ToString() + "][" + SentQueue.Count + "][" + RunHrWait.ElapsedMilliseconds + "]");
+                else
+                    Logger.Log("[ Request: " + SentCmd.Item4 + " ][ Response: " + response + " ][" + Main_noUI.cmdCounter.ToString() + "][" + SentQueue.Count + "][" + RunHrWait.ElapsedMilliseconds + "]");
+
+
+
                 SaveResponse(SentCmd.Item4 + "," + response, SentCmd.Item3);
 
                 //if(SentCmd.Item4.IndexOf("ENGINESTATE") > 0 && int.Parse(response) == 1)
@@ -446,8 +490,19 @@ namespace Denyo.ConnectionBridge.Client
                 {
                     strTmpResponse = response.Split(",".ToCharArray())[2];
                     strTmpResponse = DataStructures.Converter.HexaToString(strTmpResponse, strTmpRequest);
-                    if (!int.TryParse(strTmpResponse, out Main.lastAlarmValue))
-                        Main.lastAlarmValue = 0;
+
+                    if (ConfigurationManager.AppSettings["UI_ENABLED"] != null && ConfigurationManager.AppSettings["UI_ENABLED"].ToString().ToLower() == "true")
+                    {
+                        if (!int.TryParse(strTmpResponse, out Main.lastAlarmValue))
+                            Main.lastAlarmValue = 0;
+                    }
+                    else
+                    {
+                        if (!int.TryParse(strTmpResponse, out Main_noUI.lastAlarmValue))
+                            Main_noUI.lastAlarmValue = 0;
+                    }
+
+                    
                 }
                 else if (strTmpRequest == "A")
                 {

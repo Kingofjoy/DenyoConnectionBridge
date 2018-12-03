@@ -37,3 +37,4 @@ using System.Runtime.InteropServices;
 //[assembly: log4net.Config.XmlConfigurator(Watch = true)]
 
 [assembly: log4net.Config.XmlConfigurator(ConfigFile = "log4net.config")]
+[assembly: Microsoft.Owin.OwinStartup(typeof(Denyo.ConnectionBridge.Client.APIStartup))]

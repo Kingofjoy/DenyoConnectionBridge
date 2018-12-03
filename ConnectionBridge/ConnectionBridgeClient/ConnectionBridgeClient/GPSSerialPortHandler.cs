@@ -11,7 +11,11 @@ namespace Denyo.ConnectionBridge.Client
 {
     public class GPSSerialPortHandler
     {
+        public object Ref { get; set; }
+
         public Main FormRef { get; set; }
+
+        public Main_noUI objNonUIRef { get; set; }
 
         private SerialPort GPSSerialPort;
 
@@ -198,7 +202,12 @@ namespace Denyo.ConnectionBridge.Client
                 _receiving = true;
 
                 GotResponseForPrevCmd = true;
-                Main.GPSCmdCounter++;
+
+                if (ConfigurationManager.AppSettings["UI_ENABLED"] != null && ConfigurationManager.AppSettings["UI_ENABLED"].ToString().ToLower() == "true")
+                    Main.GPSCmdCounter++;
+                else
+                    Main_noUI.GPSCmdCounter++;
+                
                 string response = string.Empty;
 
                 switch (SentCmd.Item2)
@@ -231,25 +240,52 @@ namespace Denyo.ConnectionBridge.Client
 
                 if (!CommandSent)
                 {
-                    UpdateLogWindow("[ Request: " + SentCmd.Item3 + " ][ Response: " + response + " ] [NOTSAVED][" + Main.GPSCmdCounter.ToString() + "]");
+                    if (ConfigurationManager.AppSettings["UI_ENABLED"] != null && ConfigurationManager.AppSettings["UI_ENABLED"].ToString().ToLower() == "true")
+                        UpdateLogWindow("[ Request: " + SentCmd.Item3 + " ][ Response: " + response + " ] [NOTSAVED][" + Main.GPSCmdCounter.ToString() + "]");
+                    else
+                        UpdateLogWindow("[ Request: " + SentCmd.Item3 + " ][ Response: " + response + " ] [NOTSAVED][" + Main_noUI.GPSCmdCounter.ToString() + "]");
+
                     return;
                 }// TO avoid saving response if a command is considered to be waited enough with no response
 
 
-                UpdateLogWindow("[ Request: " + SentCmd.Item3 + " ][ Response: " + response + " ][" + Main.GPSCmdCounter.ToString() + "][" + SentQueue.Count + "][" + RunHrWait.ElapsedMilliseconds + "]");
-
-                if (Main.GPSCmdCounter >= Metadata.InputDictionaryCollection["GPS"].Count)
+                if (ConfigurationManager.AppSettings["UI_ENABLED"] != null && ConfigurationManager.AppSettings["UI_ENABLED"].ToString().ToLower() == "true")
                 {
-                    Main.GPSCmdCounter = 0;
-                    UpdateLogWindow("[ Saving : " + "GPS," + response);
-                    response = SentCmd.Item3 + "," + (response.Substring(response.IndexOf(":") + 2, response.IndexOf("OK") - response.IndexOf(":") - 6).Replace(",", "~"));
-                    SaveGPSResponse(response);
-                    UpdateLogWindow("Saved " + response);
+                    UpdateLogWindow("[ Request: " + SentCmd.Item3 + " ][ Response: " + response + " ][" + Main.GPSCmdCounter.ToString() + "][" + SentQueue.Count + "][" + RunHrWait.ElapsedMilliseconds + "]");
+
+                    if (Main.GPSCmdCounter >= Metadata.InputDictionaryCollection["GPS"].Count)
+                    {
+                        Main.GPSCmdCounter = 0;
+                        UpdateLogWindow("[ Saving : " + "GPS," + response);
+                        response = SentCmd.Item3 + "," + (response.Substring(response.IndexOf(":") + 2, response.IndexOf("OK") - response.IndexOf(":") - 6).Replace(",", "~"));
+                        SaveGPSResponse(response);
+                        UpdateLogWindow("Saved " + response);
+                    }
+                    else
+                    {
+                        FormRef.ProcessGPSCommands();
+                    }
                 }
                 else
                 {
-                    FormRef.ProcessGPSCommands();
+                    UpdateLogWindow("[ Request: " + SentCmd.Item3 + " ][ Response: " + response + " ][" + Main_noUI.GPSCmdCounter.ToString() + "][" + SentQueue.Count + "][" + RunHrWait.ElapsedMilliseconds + "]");
+
+                    if (Main_noUI.GPSCmdCounter >= Metadata.InputDictionaryCollection["GPS"].Count)
+                    {
+                        Main_noUI.GPSCmdCounter = 0;
+                        UpdateLogWindow("[ Saving : " + "GPS," + response);
+                        response = SentCmd.Item3 + "," + (response.Substring(response.IndexOf(":") + 2, response.IndexOf("OK") - response.IndexOf(":") - 6).Replace(",", "~"));
+                        SaveGPSResponse(response);
+                        UpdateLogWindow("Saved " + response);
+                    }
+                    else
+                    {
+                        objNonUIRef.ProcessGPSCommands();
+                    }
+
                 }
+
+                
             }
             catch (Exception ex)
             {
@@ -261,11 +297,49 @@ namespace Denyo.ConnectionBridge.Client
             }
         }
 
+        public void StopAll()
+        {
+            try
+            {
+
+                if (GPSSerialPort !=null && GPSSerialPort.IsOpen)
+                {
+                    GPSSerialPort.Close();
+                    GPSSerialPort.DataReceived -= DataReceiver;
+                }
+
+            }
+            catch(Exception ex1)
+            {
+                Logger.Log("GPS StopAll." + ex1.Message);
+            }
+
+            try
+            {
+                if (GPSSerialPort != null)
+                {
+                    GPSSerialPort.Dispose();
+                    GPSSerialPort = null;
+                }
+
+                Logger.Log("GPS Port stopped");
+            }
+            catch (Exception ex1)
+            {
+                Logger.Log("GPS StopAll." + ex1.Message);
+            }
+        }
+
         private void SaveGPSResponse(string response)
         {
             try
             {
-                FormRef.SaveGPSResponse(response);
+                if (ConfigurationManager.AppSettings["UI_ENABLED"] != null && ConfigurationManager.AppSettings["UI_ENABLED"].ToString().ToLower() == "true")
+                    FormRef.SaveGPSResponse(response);
+                else
+                    objNonUIRef.SaveGPSResponse(response);
+
+
             }
             catch (Exception aex)
             {
@@ -278,10 +352,12 @@ namespace Denyo.ConnectionBridge.Client
         {
             try
             {
-                if (init)
-                    FormRef.rtbDisplay.Clear();
-                FormRef.rtbDisplay.AppendText(DateTime.Now.ToString("HH:mm:ss:ffff  > ") + log);
-                FormRef.rtbDisplay.AppendText(Environment.NewLine);
+                //if (init)
+                //    FormRef.rtbDisplay.Clear();
+                //FormRef.rtbDisplay.AppendText(DateTime.Now.ToString("HH:mm:ss:ffff  > ") + log);
+                //FormRef.rtbDisplay.AppendText(Environment.NewLine);
+
+                Logger.Log(log);
             }
             catch (Exception ex)
             {

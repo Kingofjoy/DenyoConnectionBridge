@@ -26,6 +26,8 @@ namespace Denyo.ConnectionBridge.Client
 
         public Main FormRef { get; set; }
 
+        public Main_noUI objNonUIRef { get; set; }
+
         private string AuthToken { get; set; }
 
         private AppType Type { get; set; }
@@ -47,6 +49,8 @@ namespace Denyo.ConnectionBridge.Client
 
         Dictionary<string, DateTime> packetCache = new Dictionary<string, DateTime>();
 
+        private static bool InitInProgress = false;
+
         int iTemp = 0;
 
         public TcpClientHandler()
@@ -61,13 +65,19 @@ namespace Denyo.ConnectionBridge.Client
                 RSPort = int.Parse(ConfigurationManager.AppSettings["RSPort"]);
 
                 Client = new TcpClient();
-                IsServerConnected = InitiateConnection();
+
+                if(!InitInProgress)
+                    IsServerConnected = InitiateConnection();
 
                 //Client.Connect(RSName, RSPort);
 
-                bwReceiver.WorkerSupportsCancellation = true;
-                bwReceiver.DoWork += BwReceiver_DoWork;
-                bwReceiver.RunWorkerAsync();
+                //if (bwReceiver !=null && bwReceiver.IsBusy)
+                {
+                    bwReceiver.WorkerSupportsCancellation = true;
+                    bwReceiver.DoWork += BwReceiver_DoWork;
+                    bwReceiver.RunWorkerAsync();
+                }
+                
             }
             catch (Exception ex)
             {
@@ -77,6 +87,8 @@ namespace Denyo.ConnectionBridge.Client
 
         bool InitiateConnection()
         {
+            InitInProgress = true;
+
             bool bSend, bReceive, bPacketSend, bPacketReceive;
             bSend = bReceive = bPacketSend = bPacketReceive = false;
             string data = "";
@@ -111,7 +123,7 @@ namespace Denyo.ConnectionBridge.Client
 
                 Logger.Log("Connection Negotiator Server Start " + " StT: " + DateTime.Now.ToString("HH:mm:ss:fff") + " - EdT: " + dtTimeNegEndTime.ToString("HH:mm:ss:fff"));
 
-                while ((DateTime.Now <= dtTimeNegEndTime) && string.IsNullOrEmpty(AuthToken))
+                while ((DateTime.Now <= dtTimeNegEndTime) && string.IsNullOrEmpty(AuthToken) && Logger.ThreadLife)
                 {
                     switch (PresentStageId)
                     {
@@ -389,7 +401,11 @@ namespace Denyo.ConnectionBridge.Client
                 else
                 {
                     Logger.Log("Client Initiation UnSuccessfull " + ServerID + " [ " + bSend + bReceive + bPacketSend + bPacketReceive + " ] ");
+                    ///To validate - non-UI mode stuff
+                    Logger.ThreadLife = false;
+                    Logger.Log("Thread Kill Request Raised");
                     return false;
+                    
                 }
 
             }
@@ -399,6 +415,41 @@ namespace Denyo.ConnectionBridge.Client
                 Logger.Log("Client Initiation UnSuccessfull " + ServerID + " [ " + bSend + bReceive + bPacketSend + bPacketReceive + " ] ");
                 Logger.Log(ex.Message);
                 return false;
+            }
+            finally
+            {
+                InitInProgress = false;
+            }
+
+        }
+
+        internal void StopAll()
+        {
+            try
+            {
+                if (Client != null)
+                {
+                    Client.Close();
+                    Client = null;
+                }
+            }
+            catch(Exception ex1)
+            {
+                Logger.Log("TCP StopAll." + ex1.Message);
+            }
+
+            try
+            {
+                if (ServerStream != null)
+                {
+                    ServerStream.Close();
+                    ServerStream.Dispose();
+                    ServerStream = null;
+                }
+            }
+            catch (Exception ex1)
+            {
+                Logger.Log("TCP StopAll." + ex1.Message);
             }
         }
 
@@ -456,6 +507,7 @@ namespace Denyo.ConnectionBridge.Client
         {
             try
             {
+                Logger.Log("Server Receiver Started!");
                 while (Client.Connected)
                 {
                     try
@@ -479,17 +531,25 @@ namespace Denyo.ConnectionBridge.Client
                         List<DataPacket> cmds = ReceiveMessage();
                         foreach (DataPacket cmd in cmds)
                         {
+                            
                             if (cmd.SenderID != string.Empty)
                             {
                                 //to write a logic to find hex from multiple dic
                                 if (Metadata.InputDictionaryCollection[Metadata.ActiveHexaSet].Where(_ => _.Name.Equals(cmd.Message)).Count() == 0)
                                 {
                                     // send invalid cmd response to server
-                                    FormRef.SendManualCommand(cmd.Message);
+                                    if (ConfigurationManager.AppSettings["UI_ENABLED"] != null && ConfigurationManager.AppSettings["UI_ENABLED"].ToString().ToLower() == "true")
+                                        FormRef.SendManualCommand(cmd.Message);
+                                    else
+                                        objNonUIRef.SendManualCommand(cmd.Message);
                                 }
                                 else
                                 {
-                                    FormRef.SendManualCommand(Metadata.InputDictionaryCollection[Metadata.ActiveHexaSet].FirstOrDefault(x => x.Name == cmd.Message).Hexa);
+                                    if (ConfigurationManager.AppSettings["UI_ENABLED"] != null && ConfigurationManager.AppSettings["UI_ENABLED"].ToString().ToLower() == "true")
+                                        FormRef.SendManualCommand(Metadata.InputDictionaryCollection[Metadata.ActiveHexaSet].FirstOrDefault(x => x.Name == cmd.Message).Hexa);
+                                    else
+                                        objNonUIRef.SendManualCommand(Metadata.InputDictionaryCollection[Metadata.ActiveHexaSet].FirstOrDefault(x => x.Name == cmd.Message).Hexa);
+
                                 }
                             }
                         }
@@ -502,15 +562,25 @@ namespace Denyo.ConnectionBridge.Client
                 }
                 if(!Client.Connected)
                 {
-                    FormRef.bInitAll = false;
-                    IsServerConnected = InitiateConnection();
+
+                    if (ConfigurationManager.AppSettings["UI_ENABLED"] != null && ConfigurationManager.AppSettings["UI_ENABLED"].ToString().ToLower() == "true")
+                        FormRef.bInitAll = false;
+                    else
+                        objNonUIRef.bInitAll = false;
+
+                    if(!InitInProgress)
+                        IsServerConnected = InitiateConnection();
                 }
 
                 Logger.Log("Server connection lost!");
             }
             catch (Exception ex)
             {
-                Logger.Log(ex.Message);
+                Logger.Log("Receiver Error"+ex.Message,ex);
+            }
+            finally
+            {
+                Logger.Log("Server Receiver Closed!");
             }
         }
 

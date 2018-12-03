@@ -1,0 +1,9 @@
+C:\Users\TZGHUser1\Documents\Visual Studio 2010\Projects\CBS\DenyoConnectionBridgeService\DenyoConnectionBridgeService\bin\Debug\DenyoConnectionBridgeService.exe
+C:\Users\TZGHUser1\Documents\Visual Studio 2010\Projects\CBS\DenyoConnectionBridgeService\DenyoConnectionBridgeService\bin\Debug\DenyoConnectionBridgeService.exe.config
+C:\Users\TZGHUser1\Documents\Visual Studio 2010\Projects\CBS\DenyoConnectionBridgeService\DenyoConnectionBridgeService\obj\x86\Debug\ResolveAssemblyReference.cache
+C:\Users\TZGHUser1\Documents\Visual Studio 2010\Projects\CBS\DenyoConnectionBridgeService\DenyoConnectionBridgeService\obj\x86\Debug\DenyoConnectionBridgeService.ProjectInstaller.resources
+C:\Users\TZGHUser1\Documents\Visual Studio 2010\Projects\CBS\DenyoConnectionBridgeService\DenyoConnectionBridgeService\obj\x86\Debug\DenyoConnectionBridgeService.Service1.resources
+C:\Users\TZGHUser1\Documents\Visual Studio 2010\Projects\CBS\DenyoConnectionBridgeService\DenyoConnectionBridgeService\obj\x86\Debug\GenerateResource.read.1.tlog
+C:\Users\TZGHUser1\Documents\Visual Studio 2010\Projects\CBS\DenyoConnectionBridgeService\DenyoConnectionBridgeService\obj\x86\Debug\GenerateResource.write.1.tlog
+C:\Users\TZGHUser1\Documents\Visual Studio 2010\Projects\CBS\DenyoConnectionBridgeService\DenyoConnectionBridgeService\obj\x86\Debug\DenyoConnectionBridgeService.exe
+C:\Users\TZGHUser1\Documents\Visual Studio 2010\Projects\CBS\DenyoConnectionBridgeService\DenyoConnectionBridgeService\obj\x86\Debug\DenyoConnectionBridgeService.pdb
