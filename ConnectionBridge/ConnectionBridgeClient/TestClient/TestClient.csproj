@@ -90,6 +90,10 @@
       <Project>{d32ba6c1-a167-4e95-adf6-7c631981f167}</Project>
       <Name>DataStructures</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\Framework\Logger\Logger.csproj">
+      <Project>{6974379b-5489-4e86-8d07-b7524a6c3b17}</Project>
+      <Name>Logger</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ConnectionBridgeClient\ConnectionBridgeClient.csproj">
       <Project>{ee8d82cf-16da-4d0d-b619-2d13af2d0188}</Project>
       <Name>ConnectionBridgeClient</Name>

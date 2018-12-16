@@ -44,14 +44,14 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="ConnectionBridgeClient.exe" size="162304">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="ConnectionBridgeClient.exe" size="163840">
       <assemblyIdentity name="ConnectionBridgeClient" version="1.0.0.0" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>DxqLXOEQTQ5j7Uob3R0+qOFeB/FH0FaSZ6wRoUP2OU4=</dsig:DigestValue>
+        <dsig:DigestValue>aNPMJCwvCQIikifH3/GWePuwngXT8AJe70oTbwSq5QY=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
@@ -63,7 +63,7 @@
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>RWtoCy0yK/A1yrfT3RcWjXoEwHMCLpn91xy4EGsaKT0=</dsig:DigestValue>
+        <dsig:DigestValue>jEOvwowLY3H6rkCFfOz6AByCzP2Uq4zG3g5Kv8HszV8=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
@@ -75,7 +75,7 @@
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>UhhW/9x12SUtXQIMzj+fzK/fKYwwN/B+vb0/WHGHqYc=</dsig:DigestValue>
+        <dsig:DigestValue>X/93BkIeE35a1Xfn5jQOChspLiLx4T8zF1dhd9aRUXw=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
@@ -92,14 +92,14 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="Logger.dll" size="6656">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="Logger.dll" size="8704">
       <assemblyIdentity name="Logger" version="1.0.0.0" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>uQs6wqJRhrIh/LbQZFOx9TGb0ltmzMEFb6HzEM4IiOo=</dsig:DigestValue>
+        <dsig:DigestValue>XHQDZVLv945rgPlXjSEiHVoELc1mQF0o5uLjY6EAxnQ=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
@@ -195,7 +195,7 @@
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>qU4jj/yzFFnP29Fn4FkMLBEkAVjPSV7MyZG9HGFza5Q=</dsig:DigestValue>
+        <dsig:DigestValue>FkvfbkRixROX/afqo3PKaWaMI8IrcwK1hvVKkv+q3SQ=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>

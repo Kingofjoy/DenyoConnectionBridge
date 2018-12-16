@@ -75,6 +75,8 @@ namespace Denyo.ConnectionBridge.Client
             }
             else
             {
+                Application.EnableVisualStyles();
+                Application.SetCompatibleTextRenderingDefault(false);
                 Application.Run(new NotificationClient());
             }
         }

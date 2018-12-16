@@ -197,17 +197,17 @@ namespace Denyo.ConnectionBridge.Client
 
                 if (IsInternetConnected && tcpClientHandler.IsServerConnected && serialPortHandler.IsConnected)
                 {
-                    Logger.Log("All connected");
+                    //Logger.Log("All connected");
 
                     if (cmdCounter >= Metadata.InputDictionaryCollection[Metadata.ActiveHexaSet].Count)
                         cmdCounter = 0;
                     while (Metadata.InputDictionaryCollection[Metadata.ActiveHexaSet][cmdCounter].Name == "A" && lastAlarmValue < 1)
                     {
-                        Logger.Log("Skipping A" + cmdCounter);
+                        //Logger.Log("Skipping A" + cmdCounter);
                         cmdCounter++;
                         if (_InSwapLoop && cmdCounter >= Metadata.InputDictionaryCollection[Metadata.ActiveHexaSet].Count)
                         {
-                            Logger.Log("A.SWAP LOOP " + SwapTo + " completed.");
+                            //Logger.Log("A.SWAP LOOP " + SwapTo + " completed.");
                             cmdCounter = 0;
                             Metadata.ActiveHexaSet = Metadata.DefaultHexaSet;
                             _InSwapLoop = false;
@@ -215,7 +215,7 @@ namespace Denyo.ConnectionBridge.Client
                         else if (cmdCounter >= Metadata.InputDictionaryCollection[Metadata.ActiveHexaSet].Count)
                             cmdCounter = 0;
                     }
-                    Logger.Log("HEXBIN " + HEXBIN + " CV: " + (HEXBIN == "HEX").ToString() + " : " + cmdCounter);
+                    //Logger.Log("HEXBIN " + HEXBIN + " CV: " + (HEXBIN == "HEX").ToString() + " : " + cmdCounter);
                     serialPortHandler.SendNextCommand((HEXBIN == "HEX") ? Metadata.InputDictionaryCollection[Metadata.ActiveHexaSet][cmdCounter].Hexa : Metadata.InputDictionaryCollection[Metadata.ActiveHexaSet][cmdCounter].Name, (HEXBIN == "HEX") ? CommunicationMode.HEXA : CommunicationMode.TEXT);
 
                     //if (!_ExecuteGPS)
@@ -409,7 +409,7 @@ namespace Denyo.ConnectionBridge.Client
 
                 StopBits stopBits = StopBits.One;
 
-                Parity parity = Parity.Even;
+                Parity parity = Parity.None;
 
                 serialPortHandler = new SerialPortHandler(baudRate, dataBits, stopBits, parity, PortName);
 

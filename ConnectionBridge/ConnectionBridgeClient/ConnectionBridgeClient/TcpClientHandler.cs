@@ -590,7 +590,7 @@ namespace Denyo.ConnectionBridge.Client
             {
                 DataPacket deviceResponse = new DataPacket();
 
-                Logger.Log("SM S1");
+                //Logger.Log("SM S1");
                 deviceResponse.SenderID = AppID;
                 deviceResponse.SenderType = this.Type;
 

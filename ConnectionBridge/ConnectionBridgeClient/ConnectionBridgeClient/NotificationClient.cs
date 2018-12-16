@@ -7,6 +7,7 @@ using System.Drawing;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Newtonsoft.Json;
@@ -16,7 +17,8 @@ namespace Denyo.ConnectionBridge.Client
     public partial class NotificationClient : Form
     {
         Dictionary<string, string> StatusDic = new Dictionary<string, string>();
-        
+        System.Threading.Thread MyThread;
+
         public NotificationClient()
         {
             InitializeComponent();
@@ -45,6 +47,13 @@ namespace Denyo.ConnectionBridge.Client
                 dgView.Refresh();
             }catch(Exception ex)
             { }
+
+            try
+            {
+
+                Logger.EventLogged += Logger_EventLogged;
+            }
+            catch { }
 
             this.Hide();
 
@@ -186,6 +195,75 @@ namespace Denyo.ConnectionBridge.Client
             }
             catch
             { }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            Logger.LogFatal("Service Starting");
+            Logger.ThreadLife = true;
+            MyThread = new System.Threading.Thread(() =>
+            {
+
+                (new Main_noUI()).Process();
+
+            });
+            MyThread.SetApartmentState(ApartmentState.STA);
+            MyThread.Start();
+            Logger.LogFatal("Service Started");
+        }
+
+        private void UpdateLogWindow(string log, Exception exObj = null, DateTime? ReceivedDT = null)
+        {
+
+            DateTime dtObj = DateTime.Now;
+
+
+            try
+            {
+                if (ReceivedDT != null) dtObj = (DateTime)ReceivedDT;
+
+                if (this.rtbDisplay.TextLength > 100000)
+                {
+                    //FormRef.rtbDisplay.AppendText(dtObj.ToString("HH:mm:ss:ffff  > ") + log + "{" + FormRef.rtbDisplay.TextLength + "}");
+                    this.rtbDisplay.SelectAll();
+                    this.rtbDisplay.Clear();
+                    this.rtbDisplay.Text = dtObj.ToString("HH:mm:ss:ffff  > ") + "Clear Disp";
+                }
+            }
+            catch (Exception ex)
+            {
+
+            }
+
+            try
+            {
+                //if (init)
+                //    this.rtbDisplay.Clear();
+
+                this.rtbDisplay.AppendText(dtObj.ToString("HH:mm:ss:ffff  > ") + log);
+                this.rtbDisplay.AppendText(Environment.NewLine);
+
+                if (exObj != null)
+                {
+                    this.rtbDisplay.AppendText(dtObj.ToString("HH:mm:ss:ffff  > E > ") + exObj.Message);
+                    this.rtbDisplay.AppendText(Environment.NewLine);
+                    if (exObj.InnerException != null)
+                    {
+                        this.rtbDisplay.AppendText(dtObj.ToString("HH:mm:ss:ffff  > IE > ") + exObj.InnerException.Message);
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+
+            }
+
+        }
+
+        private void Logger_EventLogged(object sender, LoggerEventArgs e)
+        {
+            UpdateLogWindow(e.Type + " : " + e.Message, e.ExceptionObject, e.TimeStamp);
         }
     }
 }

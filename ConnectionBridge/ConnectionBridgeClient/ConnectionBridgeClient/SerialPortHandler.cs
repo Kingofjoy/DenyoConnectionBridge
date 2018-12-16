@@ -74,6 +74,15 @@ namespace Denyo.ConnectionBridge.Client
             { }
             IsConnected = false;
 
+            try
+            {
+                Logger.Log(string.Format("Serial Params Received: BaudRate: {0} , DataBits: {1} , StopBits: {2} , Parity: {3} ,PortName: {4} ", BaudRate, DataBits, StopBits.ToString(), Parity.ToString(), PortName));
+            }
+            catch (Exception pex)
+            {
+                Logger.Log("Unable to display serial params: " + pex.Message);
+            }
+
             serialPort = new SerialPort();
             _baudRate = BaudRate;
             _dataBits = DataBits;
@@ -81,13 +90,14 @@ namespace Denyo.ConnectionBridge.Client
             _parity = Parity;
             _portName = PortName;
             serialPort.DataReceived += new SerialDataReceivedEventHandler(DataReceiver);
-            serialPort.DataReceived += SerialPort_DataReceived;
+
             serialPort.ErrorReceived += SerialPort_ErrorReceived;
             Logger.Log("SerialPort Eventz Attached");
             GotResponseForPrevCmd = true;
             _mode = CommunicationMode.HEXA;
             ManualCmdQueue = new Queue<string>();
             OpenConnection();
+            Logger.Log("SerialPort Af Open Con");
 
             //one more attempt based o real time observation to skip : Access to the port 'COM1' is denied. on error handled scenario
 
@@ -95,6 +105,7 @@ namespace Denyo.ConnectionBridge.Client
 
             if(!IsConnected)
             {
+                Logger.Log("NotConnected. SerialPort Af Open Con 2");
                 try
                 {
                     if(serialPort !=null && serialPort.BaseStream != null)
@@ -118,7 +129,6 @@ namespace Denyo.ConnectionBridge.Client
                     _parity = Parity;
                     _portName = PortName;
                     serialPort.DataReceived += new SerialDataReceivedEventHandler(DataReceiver);
-                    serialPort.DataReceived += SerialPort_DataReceived;
                     serialPort.ErrorReceived += SerialPort_ErrorReceived;
                     Logger.Log("SerialPort Event2z Attached");
                     GotResponseForPrevCmd = true;
@@ -130,10 +140,6 @@ namespace Denyo.ConnectionBridge.Client
             }
         }
 
-        private void SerialPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
-        {
-            Logger.Log("SerialPort_DataReceived");
-        }
 
         private void SerialPort_ErrorReceived(object sender, SerialErrorReceivedEventArgs e)
         {
@@ -308,8 +314,8 @@ namespace Denyo.ConnectionBridge.Client
                     Logger.Log("sending cmd:" + cmd);
                 */ //LR
 
-                Logger.Log("Serial Receiver Monitor:S1: ReadBufferSize: " + serialPort.ReadBufferSize);
-                Logger.Log("Serial Receiver Monitor:S1: BytesToRead: " + serialPort.BytesToRead);
+               // Logger.Log("Serial Receiver Monitor:S1: ReadBufferSize: " + serialPort.ReadBufferSize);
+               // Logger.Log("Serial Receiver Monitor:S1: BytesToRead: " + serialPort.BytesToRead);
 
                 switch (CommandToSend.Item2)
                 {
@@ -341,8 +347,8 @@ namespace Denyo.ConnectionBridge.Client
                         break;
                 }
 
-                Logger.Log("Serial Receiver Monitor:S1: ReadBufferSize: " + serialPort.ReadBufferSize);
-                Logger.Log("Serial Receiver Monitor:S1: BytesToRead: " + serialPort.BytesToRead);
+               // Logger.Log("Serial Receiver Monitor:S1: ReadBufferSize: " + serialPort.ReadBufferSize);
+               // Logger.Log("Serial Receiver Monitor:S1: BytesToRead: " + serialPort.BytesToRead);
 
                 //DataReceiver(null, null);
 
@@ -376,7 +382,7 @@ namespace Denyo.ConnectionBridge.Client
                 var SentCmd = SentQueue.Dequeue();
                 _receiving = true;
                 //LR  
-                Logger.Log("DataReceiver:");
+                //Logger.Log("DataReceiver:");
 
                 GotResponseForPrevCmd = true;
                 if (!SentCmd.Item3)
@@ -522,7 +528,7 @@ namespace Denyo.ConnectionBridge.Client
                 else
                     objNonUIProcessRef.Process();
 
-                Logger.Log("DataReceiver:Completed");
+                //Logger.Log("DataReceiver:Completed");
 
             }
             catch (Exception ex)
