@@ -611,6 +611,11 @@ namespace Denyo.ConnectionBridge.Client
 
                 if (Metadata.DataSaverEnabled)
                 {
+                    if(deviceResponse.IsManualCmd || deviceResponse.Type == PacketType.Request || deviceResponse.Type == PacketType.Response )
+                    {
+                        Logger.Log("Clearing Cach upon receiving Manual Cmd");
+                        packetCache.Clear();
+                    }
                     //Logger.Log("SM S4");
                     if (!deviceResponse.IsManualCmd && deviceResponse.Type == PacketType.MonitoringData)
                     {
