@@ -13,6 +13,8 @@ namespace Denyo.ConnectionBridge.Client
     {
         public Main FormRef { get; set; }
 
+        public Main_noUI objNonUIProcessRef { get; set; }
+
         private SerialPort serialPort;
 
         private int _baudRate { get; set; }
@@ -60,8 +62,16 @@ namespace Denyo.ConnectionBridge.Client
         int _minHexaLength = 0;
         int _WaitTime = 50;
 
+        bool UI_Enabled_Process = false;
+
         public SerialPortHandler(int BaudRate, int DataBits, StopBits StopBits, Parity Parity, string PortName)
         {
+            try
+            {
+                UI_Enabled_Process = (ConfigurationManager.AppSettings["UI_ENABLED"] != null && ConfigurationManager.AppSettings["UI_ENABLED"].ToString().ToLower() == "true");
+            }
+            catch(Exception ex)
+            { }
             IsConnected = false;
 
             serialPort = new SerialPort();
@@ -71,6 +81,9 @@ namespace Denyo.ConnectionBridge.Client
             _parity = Parity;
             _portName = PortName;
             serialPort.DataReceived += new SerialDataReceivedEventHandler(DataReceiver);
+            serialPort.DataReceived += SerialPort_DataReceived;
+            serialPort.ErrorReceived += SerialPort_ErrorReceived;
+            Logger.Log("SerialPort Eventz Attached");
             GotResponseForPrevCmd = true;
             _mode = CommunicationMode.HEXA;
             ManualCmdQueue = new Queue<string>();
@@ -105,6 +118,9 @@ namespace Denyo.ConnectionBridge.Client
                     _parity = Parity;
                     _portName = PortName;
                     serialPort.DataReceived += new SerialDataReceivedEventHandler(DataReceiver);
+                    serialPort.DataReceived += SerialPort_DataReceived;
+                    serialPort.ErrorReceived += SerialPort_ErrorReceived;
+                    Logger.Log("SerialPort Event2z Attached");
                     GotResponseForPrevCmd = true;
                     _mode = CommunicationMode.HEXA;
                     ManualCmdQueue = new Queue<string>();
@@ -114,8 +130,19 @@ namespace Denyo.ConnectionBridge.Client
             }
         }
 
+        private void SerialPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
+        {
+            Logger.Log("SerialPort_DataReceived");
+        }
+
+        private void SerialPort_ErrorReceived(object sender, SerialErrorReceivedEventArgs e)
+        {
+            Logger.Log("SerialPort_ErrorReceived"+e.ToString());
+        }
+
         public void StopAll()
         {
+            Logger.Log("Serial StopAll Triggered");
             try
             {
                 if (serialPort !=null && serialPort.IsOpen)
@@ -123,7 +150,7 @@ namespace Denyo.ConnectionBridge.Client
                     serialPort.Close();
                 }
 
-                serialPort.DataReceived -= DataReceiver;
+              //  serialPort.DataReceived -= DataReceiver;
             }
             catch(Exception ex1)
             {
@@ -281,6 +308,9 @@ namespace Denyo.ConnectionBridge.Client
                     Logger.Log("sending cmd:" + cmd);
                 */ //LR
 
+                Logger.Log("Serial Receiver Monitor:S1: ReadBufferSize: " + serialPort.ReadBufferSize);
+                Logger.Log("Serial Receiver Monitor:S1: BytesToRead: " + serialPort.BytesToRead);
+
                 switch (CommandToSend.Item2)
                 {
                     case CommunicationMode.TEXT:
@@ -311,6 +341,11 @@ namespace Denyo.ConnectionBridge.Client
                         break;
                 }
 
+                Logger.Log("Serial Receiver Monitor:S1: ReadBufferSize: " + serialPort.ReadBufferSize);
+                Logger.Log("Serial Receiver Monitor:S1: BytesToRead: " + serialPort.BytesToRead);
+
+                //DataReceiver(null, null);
+
             }
             catch (Exception ex)
             {
@@ -340,12 +375,13 @@ namespace Denyo.ConnectionBridge.Client
             {
                 var SentCmd = SentQueue.Dequeue();
                 _receiving = true;
-                //LR  Logger.Log("DataReceiver:\n");
+                //LR  
+                Logger.Log("DataReceiver:");
 
                 GotResponseForPrevCmd = true;
                 if (!SentCmd.Item3)
                 {
-                    if (ConfigurationManager.AppSettings["UI_ENABLED"] != null && ConfigurationManager.AppSettings["UI_ENABLED"].ToString().ToLower() == "true")
+                    if (UI_Enabled_Process)
                         Main.cmdCounter++;
                     else
                         Main_noUI.cmdCounter++;
@@ -436,7 +472,7 @@ namespace Denyo.ConnectionBridge.Client
                 
                 if (!CommandSent)
                 {
-                    if (ConfigurationManager.AppSettings["UI_ENABLED"] != null && ConfigurationManager.AppSettings["UI_ENABLED"].ToString().ToLower() == "true")
+                    if (UI_Enabled_Process)
                         Logger.Log("[ Request: " + SentCmd.Item4 + " ][ Response: " + response + " ] [NOTSAVED][" + Main.cmdCounter.ToString() + "]");
                     else
                         Logger.Log("[ Request: " + SentCmd.Item4 + " ][ Response: " + response + " ] [NOTSAVED][" + Main_noUI.cmdCounter.ToString() + "]");
@@ -445,7 +481,7 @@ namespace Denyo.ConnectionBridge.Client
                 }// TO avoid saving response if a command is considered to be waited enough with no response
 
 
-                if (ConfigurationManager.AppSettings["UI_ENABLED"] != null && ConfigurationManager.AppSettings["UI_ENABLED"].ToString().ToLower() == "true")
+                if (UI_Enabled_Process)
                     Logger.Log("[ Request: " + SentCmd.Item4 + " ][ Response: " + response + " ][" + Main.cmdCounter.ToString() + "][" + SentQueue.Count + "][" + RunHrWait.ElapsedMilliseconds + "]");
                 else
                     Logger.Log("[ Request: " + SentCmd.Item4 + " ][ Response: " + response + " ][" + Main_noUI.cmdCounter.ToString() + "][" + SentQueue.Count + "][" + RunHrWait.ElapsedMilliseconds + "]");
@@ -461,15 +497,33 @@ namespace Denyo.ConnectionBridge.Client
 
                 if (SentCmd.Item3)
                 {
-                    if (!FormRef.SwapRequired)
+                    if (UI_Enabled_Process)
                     {
-                        FormRef.SwapTo = Metadata.ActiveHexaSet;
-                        FormRef.SwapRequired = true;
+                        if (!FormRef.SwapRequired)
+                        {
+                            FormRef.SwapTo = Metadata.ActiveHexaSet;
+                            FormRef.SwapRequired = true;
+                        }
+
+                    }
+                    else
+                    {
+                        if(!objNonUIProcessRef.SwapRequired)
+                        {
+                            objNonUIProcessRef.SwapTo = Metadata.ActiveHexaSet;
+                            objNonUIProcessRef.SwapRequired = true;
+                        }
+
                     }
                 }
-                
 
-                FormRef.Process();
+                if (UI_Enabled_Process)
+                    FormRef.Process();
+                else
+                    objNonUIProcessRef.Process();
+
+                Logger.Log("DataReceiver:Completed");
+
             }
             catch (Exception ex)
             {
@@ -491,7 +545,7 @@ namespace Denyo.ConnectionBridge.Client
                     strTmpResponse = response.Split(",".ToCharArray())[2];
                     strTmpResponse = DataStructures.Converter.HexaToString(strTmpResponse, strTmpRequest);
 
-                    if (ConfigurationManager.AppSettings["UI_ENABLED"] != null && ConfigurationManager.AppSettings["UI_ENABLED"].ToString().ToLower() == "true")
+                    if (UI_Enabled_Process)
                     {
                         if (!int.TryParse(strTmpResponse, out Main.lastAlarmValue))
                             Main.lastAlarmValue = 0;
@@ -514,7 +568,10 @@ namespace Denyo.ConnectionBridge.Client
                     }
                 }
 
-                FormRef.SaveResponse(response, IsManualCmd);
+                if (UI_Enabled_Process)
+                    FormRef.SaveResponse(response, IsManualCmd);
+                else
+                    objNonUIProcessRef.SaveResponse(response, IsManualCmd);
             }
             catch (Exception aex)
             {
@@ -523,6 +580,7 @@ namespace Denyo.ConnectionBridge.Client
 
         }
 
+        [Obsolete]
         private void UpdateLogWindow(string log, bool init = false)
         {
             try

@@ -173,12 +173,12 @@ namespace Denyo.ConnectionBridge.Client
                     cmdCounter = 0;
                     _InSwapLoop = true;
                     SwapRequired = false;
-                    //Logger.Log("ACTIVE DS " + Metadata.ActiveHexaSet);
-                    //Logger.Log("Default DS " + Metadata.DefaultHexaSet);
+                    Logger.Log("ACTIVE DS " + Metadata.ActiveHexaSet);
+                    Logger.Log("Default DS " + Metadata.DefaultHexaSet);
                 }
                 if (_InSwapLoop && cmdCounter >= Metadata.InputDictionaryCollection[Metadata.ActiveHexaSet].Count)
                 {
-                    //Logger.Log("SWAP LOOP " + _swapTo + " completed.");
+                    Logger.Log("SWAP LOOP " + SwapTo + " completed.");
                     cmdCounter = 0;
                     Metadata.ActiveHexaSet = Metadata.DefaultHexaSet;
                     _InSwapLoop = false;
@@ -197,15 +197,17 @@ namespace Denyo.ConnectionBridge.Client
 
                 if (IsInternetConnected && tcpClientHandler.IsServerConnected && serialPortHandler.IsConnected)
                 {
+                    Logger.Log("All connected");
+
                     if (cmdCounter >= Metadata.InputDictionaryCollection[Metadata.ActiveHexaSet].Count)
                         cmdCounter = 0;
                     while (Metadata.InputDictionaryCollection[Metadata.ActiveHexaSet][cmdCounter].Name == "A" && lastAlarmValue < 1)
                     {
-                        //Logger.Log("Skipping A" + cmdCounter);
+                        Logger.Log("Skipping A" + cmdCounter);
                         cmdCounter++;
                         if (_InSwapLoop && cmdCounter >= Metadata.InputDictionaryCollection[Metadata.ActiveHexaSet].Count)
                         {
-                            //Logger.Log("A.SWAP LOOP " + _swapTo + " completed.");
+                            Logger.Log("A.SWAP LOOP " + SwapTo + " completed.");
                             cmdCounter = 0;
                             Metadata.ActiveHexaSet = Metadata.DefaultHexaSet;
                             _InSwapLoop = false;
@@ -213,6 +215,7 @@ namespace Denyo.ConnectionBridge.Client
                         else if (cmdCounter >= Metadata.InputDictionaryCollection[Metadata.ActiveHexaSet].Count)
                             cmdCounter = 0;
                     }
+                    Logger.Log("HEXBIN " + HEXBIN + " CV: " + (HEXBIN == "HEX").ToString() + " : " + cmdCounter);
                     serialPortHandler.SendNextCommand((HEXBIN == "HEX") ? Metadata.InputDictionaryCollection[Metadata.ActiveHexaSet][cmdCounter].Hexa : Metadata.InputDictionaryCollection[Metadata.ActiveHexaSet][cmdCounter].Name, (HEXBIN == "HEX") ? CommunicationMode.HEXA : CommunicationMode.TEXT);
 
                     //if (!_ExecuteGPS)
@@ -228,6 +231,7 @@ namespace Denyo.ConnectionBridge.Client
                 }
                 else
                 {
+                    Logger.Log("All NOT connected");
                     bInitAll = false;
                     timer1.Enabled = true;
                     //Save in local
@@ -287,6 +291,8 @@ namespace Denyo.ConnectionBridge.Client
         {
             try
             {
+                Logger.Log("InitAll Started");
+
                 //timer1.Enabled = false;
 
                 InitializeMetaData();
@@ -306,6 +312,8 @@ namespace Denyo.ConnectionBridge.Client
                 
 
                 timer1.Enabled = true;
+
+                Logger.Log("InitAll Completed");
             }
             catch (Exception ex)
             {
@@ -404,6 +412,8 @@ namespace Denyo.ConnectionBridge.Client
                 Parity parity = Parity.Even;
 
                 serialPortHandler = new SerialPortHandler(baudRate, dataBits, stopBits, parity, PortName);
+
+                serialPortHandler.objNonUIProcessRef = this;
                 
             }
             catch (Exception INITSRER)
@@ -715,7 +725,10 @@ namespace Denyo.ConnectionBridge.Client
                 catch { }
             }
             if (hexList.Count > 0 && !Metadata.InputDictionaryCollection.ContainsKey(HexaSetName))
+            {
                 Metadata.InputDictionaryCollection.Add(HexaSetName, hexList);
+                Logger.Log("Hex Set : " + HexaSetName + ", Count: " + hexList.Count + " added ");
+            }
         }
 
         private bool CheckForInternetConnection()

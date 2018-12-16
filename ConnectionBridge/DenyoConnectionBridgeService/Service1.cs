@@ -44,6 +44,7 @@ namespace DenyoConnectionBridgeService
                     (new Main_noUI()).Process();
 
                 });
+                MyThread.SetApartmentState(ApartmentState.STA);
                 MyThread.Start();
                 
                 Logger.LogFatal("CHILD THREAD. " + MyThread.ThreadState.ToString());
@@ -151,6 +152,7 @@ namespace DenyoConnectionBridgeService
                             (new Main_noUI()).Process();
 
                         });
+                        MyThread.SetApartmentState(ApartmentState.STA);
                         MyThread.Start();
                         Logger.LogFatal("Child CB Instance Initiated");
                         Logger.LogFatal("Child CB Instance NewTID" + MyThread.ManagedThreadId);

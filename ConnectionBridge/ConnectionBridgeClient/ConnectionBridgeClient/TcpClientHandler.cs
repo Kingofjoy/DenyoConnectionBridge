@@ -521,7 +521,7 @@ namespace Denyo.ConnectionBridge.Client
 
                         //string returndata = System.Text.Encoding.ASCII.GetString(inStream);
 
-                        //if (returndata.Length == 0)
+                        //if (returndata.Length == 0)  
                         //{
                         //    continue;
                         //}
@@ -590,7 +590,7 @@ namespace Denyo.ConnectionBridge.Client
             {
                 DataPacket deviceResponse = new DataPacket();
 
-                //Logger.Log("SM S1");
+                Logger.Log("SM S1");
                 deviceResponse.SenderID = AppID;
                 deviceResponse.SenderType = this.Type;
 
@@ -626,13 +626,13 @@ namespace Denyo.ConnectionBridge.Client
                                     //Logger.Log("SM S8");
                                     if ((deviceResponse.TimeStamp - packetCache[deviceResponse.Message]).TotalMinutes < Metadata.DataSaverCacheMinutes)
                                     {
-                                        //Logger.Log("DataSend Skipped : True");
+                                        Logger.Log("DataSend Skipped : True : "+ deviceResponse.Message);
                                         return;
                                         // Skip sending data packet to server
                                     }
                                     else
                                     {
-                                        //Logger.Log("DataSend Skipped : False");
+                                        Logger.Log("DataSend Skipped : False : Added to Cache");
                                         packetCache[deviceResponse.Message] = deviceResponse.TimeStamp;
                                     }
                                 }
