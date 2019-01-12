@@ -44,14 +44,14 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="ConnectionBridgeClient.exe" size="164352">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="ConnectionBridgeClient.exe" size="169984">
       <assemblyIdentity name="ConnectionBridgeClient" version="1.0.0.0" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>faKCC/ntligSP1fYBQlCvOSsQKpLLE4wQFQifzL0OK4=</dsig:DigestValue>
+        <dsig:DigestValue>aFxWy1/FxuCAiQ0fTlkYN0Wg2ga4f8mbt3+DdiQahyo=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
@@ -63,19 +63,19 @@
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>NfnPLFZzcLNnoaC0BMpF1gSEwm/hgGzb8CyKIsMVCkM=</dsig:DigestValue>
+        <dsig:DigestValue>kp9ipVnNtj2i+XsT05/vdc/xmicAuw9UyvfZ1DTBwEM=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="DenyoConnectionBridgeService.exe" size="11712">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="DenyoConnectionBridgeService.exe" size="12224">
       <assemblyIdentity name="DenyoConnectionBridgeService" version="1.0.0.0" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>ACQDYJC4xifn5t2gMe2pN6pE/3x40rbm1tdADEl2CAY=</dsig:DigestValue>
+        <dsig:DigestValue>GfhL03xTmqoWy9IEBcNv52jABxYnUQHTfCD/s984lnw=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
@@ -92,14 +92,14 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="Logger.dll" size="6656">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="Logger.dll" size="8704">
       <assemblyIdentity name="Logger" version="1.0.0.0" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>bs0msrrJMA9h3OSZYk9aYuyc7EiZqjJ5Bpdy/1lT+qo=</dsig:DigestValue>
+        <dsig:DigestValue>8/5H75F7NAFcsbBEwq6Gz+jBGoUO8kXlVvdBM/hNyU0=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
@@ -199,13 +199,13 @@
       </hash>
     </dependentAssembly>
   </dependency>
-  <file name="DenyoConnectionBridgeService.exe.config" size="1536">
+  <file name="DenyoConnectionBridgeService.exe.config" size="1676">
     <hash>
       <dsig:Transforms>
         <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
       </dsig:Transforms>
       <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-      <dsig:DigestValue>DtVoNiQalFS3dGY4WWPPb/nFOLbfJeNonVz4XpTJx5Y=</dsig:DigestValue>
+      <dsig:DigestValue>f5wxfbyF4IPk7axSQ0tmcbkXvzCgsYrPITTjPDNfFRU=</dsig:DigestValue>
     </hash>
   </file>
   <file name="Hexa_C1Idle.hex" size="1234">
@@ -269,6 +269,15 @@
       </dsig:Transforms>
       <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
       <dsig:DigestValue>FSs9mkVhEx9wPdoyNAgSf7pbvJGuUz6rzzo0pOpLGS0=</dsig:DigestValue>
+    </hash>
+  </file>
+  <file name="postinstaller.bat" size="105">
+    <hash>
+      <dsig:Transforms>
+        <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
+      </dsig:Transforms>
+      <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
+      <dsig:DigestValue>UITvuc7gWnwQqPlSqO4XXysz0NzPmssaDLJlpTk9H30=</dsig:DigestValue>
     </hash>
   </file>
   <compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">

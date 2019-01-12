@@ -152,6 +152,7 @@
     <Content Include="Hexa_GPS.hex" />
     <Content Include="Hexa_SetPoints.hex" />
     <Content Include="log4net.config" />
+    <Content Include="postinstaller.bat" />
     <None Include="Properties\app.manifest" />
   </ItemGroup>
   <ItemGroup>

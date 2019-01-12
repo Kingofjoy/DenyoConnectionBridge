@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Newtonsoft.Json;
+using System.Reflection;
 
 namespace Denyo.ConnectionBridge.Client
 {
@@ -18,6 +19,13 @@ namespace Denyo.ConnectionBridge.Client
     {
         Dictionary<string, string> StatusDic = new Dictionary<string, string>();
         System.Threading.Thread MyThread;
+        bool goHide = false;
+        bool setup = false;
+        public NotificationClient(string[] args)
+        {
+            InitializeComponent();
+            setup = true;
+        }
 
         public NotificationClient()
         {
@@ -59,6 +67,7 @@ namespace Denyo.ConnectionBridge.Client
 
             this.CBNotifier.Visible = true;
             this.WindowState = FormWindowState.Minimized;
+            goHide = true;
         }
 
         private void QuitMenu_Click(object sender, EventArgs e)
@@ -94,11 +103,25 @@ namespace Denyo.ConnectionBridge.Client
 
         private void NotificationClient_Load(object sender, EventArgs e)
         {
+            if(setup)
+            {
+                SetupClientApplications();
+                Application.Exit();
+            }
+
             CBNotifier.BalloonTipTitle = "Denyo Connection Bridge";
             CBNotifier.BalloonTipText = "Denyo Connection Bridge Client Status";
             CBNotifier.ShowBalloonTip(1000);
 
             CBNotifier.Text = "Denyo Connection Bridge Client Status.";
+
+            if(goHide)
+            {
+                this.Hide();
+                this.CBNotifier.Visible = true;
+                this.WindowState = FormWindowState.Minimized;
+                goHide = false;
+            }
         }
 
         private void CBNotifier_MouseDoubleClick(object sender, MouseEventArgs e)
@@ -264,6 +287,30 @@ namespace Denyo.ConnectionBridge.Client
         private void Logger_EventLogged(object sender, LoggerEventArgs e)
         {
             UpdateLogWindow(e.Type + " : " + e.Message, e.ExceptionObject, e.TimeStamp);
+        }
+
+        private static void SetupClientApplications()
+        {
+            try
+            {
+                #region SetClientAppInStartup
+
+                var registryKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Run", true);
+                if (registryKey.GetValue("Connection_Bridge_Client_Startup") == null || (string)registryKey.GetValue("Connection_Bridge_Client_Startup") != Assembly.GetExecutingAssembly().Location)
+                {
+                    registryKey.SetValue("Connection_Bridge_Client_Startup", System.Reflection.Assembly.GetExecutingAssembly().Location);
+                }
+
+                #endregion
+
+                #region SetServiceRecovery
+                System.Diagnostics.Process.Start(System.IO.Directory.GetParent(System.Reflection.Assembly.GetExecutingAssembly().Location) + "\\postinstaller.bat");
+                #endregion
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("WRN: Invalid Setup Result. Ex " + ex.Message,"Warning");
+            }
         }
     }
 }

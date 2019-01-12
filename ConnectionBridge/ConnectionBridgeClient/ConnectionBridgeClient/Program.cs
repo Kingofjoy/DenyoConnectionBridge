@@ -15,6 +15,29 @@ namespace Denyo.ConnectionBridge.Client
         [STAThread]
         static void Main()
         {
+            
+
+            try
+            {
+                
+                string[] args = Environment.GetCommandLineArgs();
+                if (args != null && args.Length>0)
+                {
+                    
+                    foreach (string arg in args)
+                    {
+                        if (arg.ToLower() == "setup")
+                        {
+                            Application.EnableVisualStyles();
+                            Application.SetCompatibleTextRenderingDefault(false);
+                            Application.Run(new NotificationClient(args));
+                            return;
+                        }
+                    }
+                }
+            }
+            catch { }
+            
 
             if (ConfigurationManager.AppSettings["UI_ENABLED"] != null && ConfigurationManager.AppSettings["UI_ENABLED"].ToString().ToLower() == "true")
             {

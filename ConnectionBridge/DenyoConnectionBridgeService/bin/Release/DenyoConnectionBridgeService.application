@@ -7,14 +7,14 @@
     <framework targetVersion="4.5" profile="Full" supportedRuntime="4.0.30319" />
   </compatibleFrameworks>
   <dependency>
-    <dependentAssembly dependencyType="install" codebase="DenyoConnectionBridgeService.exe.manifest" size="15724">
+    <dependentAssembly dependencyType="install" codebase="DenyoConnectionBridgeService.exe.manifest" size="16118">
       <assemblyIdentity name="DenyoConnectionBridgeService.exe" version="1.0.0.7" publicKeyToken="0000000000000000" language="en" processorArchitecture="msil" type="win32" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>8G0bsrMsq1l+Fb8nISPL8nEf3eImR3Ijw2GP1vBt81s=</dsig:DigestValue>
+        <dsig:DigestValue>CMKzy5yCjNC4RTva+RKO67fULlMGvJeFJyhTFA2k3b0=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>

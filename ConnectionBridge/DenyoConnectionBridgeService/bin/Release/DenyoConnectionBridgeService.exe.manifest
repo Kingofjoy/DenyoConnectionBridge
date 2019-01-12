@@ -44,14 +44,14 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="ConnectionBridgeClient.exe" size="163840">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="ConnectionBridgeClient.exe" size="165888">
       <assemblyIdentity name="ConnectionBridgeClient" version="1.0.0.0" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>aNPMJCwvCQIikifH3/GWePuwngXT8AJe70oTbwSq5QY=</dsig:DigestValue>
+        <dsig:DigestValue>yGwPwQ6kzTjjOfmuspHM8C2Pm23E03tF3EbKescgTpo=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
@@ -63,7 +63,7 @@
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>jEOvwowLY3H6rkCFfOz6AByCzP2Uq4zG3g5Kv8HszV8=</dsig:DigestValue>
+        <dsig:DigestValue>SMk9fPdMgfhDLCxpP6rWTIaWc8DZMQRdBbG2b6KNZHM=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
@@ -75,7 +75,7 @@
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>X/93BkIeE35a1Xfn5jQOChspLiLx4T8zF1dhd9aRUXw=</dsig:DigestValue>
+        <dsig:DigestValue>4hVI205fNSvMXRwL5e9CV5IRirI1Gt7BMySh1ixiyyk=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
@@ -99,7 +99,7 @@
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>XHQDZVLv945rgPlXjSEiHVoELc1mQF0o5uLjY6EAxnQ=</dsig:DigestValue>
+        <dsig:DigestValue>86fudQW2k3rXVOyEb74WLwrVd+7HHZiZrSHU8ue1opI=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
@@ -195,7 +195,7 @@
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>FkvfbkRixROX/afqo3PKaWaMI8IrcwK1hvVKkv+q3SQ=</dsig:DigestValue>
+        <dsig:DigestValue>leTharKPwvHzA6UMOH/8foltXfEPXURT7a/6ZA5o+pU=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
@@ -269,6 +269,15 @@
       </dsig:Transforms>
       <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
       <dsig:DigestValue>FSs9mkVhEx9wPdoyNAgSf7pbvJGuUz6rzzo0pOpLGS0=</dsig:DigestValue>
+    </hash>
+  </file>
+  <file name="postinstaller.bat" size="105">
+    <hash>
+      <dsig:Transforms>
+        <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
+      </dsig:Transforms>
+      <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
+      <dsig:DigestValue>UITvuc7gWnwQqPlSqO4XXysz0NzPmssaDLJlpTk9H30=</dsig:DigestValue>
     </hash>
   </file>
   <compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">

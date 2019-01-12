@@ -36,15 +36,17 @@
             this.serviceProcessInstaller1.Account = System.ServiceProcess.ServiceAccount.LocalSystem;
             this.serviceProcessInstaller1.Password = null;
             this.serviceProcessInstaller1.Username = null;
+            
             // 
             // serviceInstaller1
             // 
-            this.serviceInstaller1.ServiceName = "DenyoConnectionBridgeService";
+            this.serviceInstaller1.DelayedAutoStart = true;
             this.serviceInstaller1.Description = "DenyoConnectionBridgeService";
             this.serviceInstaller1.DisplayName = "Denyo ConnectionBridge Service";
-
+            this.serviceInstaller1.ServiceName = "DenyoConnectionBridgeService";
             this.serviceInstaller1.StartType = System.ServiceProcess.ServiceStartMode.Automatic;
-            this.serviceInstaller1.DelayedAutoStart = true;
+            //this.serviceInstaller1.Committed += ServiceInstaller1_Committed;
+            
             // 
             // ProjectInstaller
             // 
@@ -53,6 +55,28 @@
             this.serviceInstaller1});
 
         }
+
+        //private void ServiceInstaller1_Committed(object sender, System.Configuration.Install.InstallEventArgs e)
+        //{
+        //    string tardir = "";
+        //    try
+        //    {
+        //        tardir = Context.Parameters["[TARGETDIR]"].ToString();
+        //    }
+        //    catch { }
+        //    try
+        //    {
+        //        tardir += " , " + Context.Parameters["TARGETDIR"].ToString();
+        //    }
+        //    catch { }
+
+        //    try
+        //    {
+        //        System.Diagnostics.Process.Start("postinstaller.bat", tardir);
+        //    }
+        //    catch
+        //    { }
+        //}
 
         #endregion
 
